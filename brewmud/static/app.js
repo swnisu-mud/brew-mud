@@ -2,6 +2,7 @@ let token = null;
 let pollTimer = null;
 let audioContext = null;
 let soundEnabled = true;
+let pendingWelcome = "";
 const terminal = document.querySelector("#terminal");
 const commandInput = document.querySelector("#command");
 
@@ -75,7 +76,6 @@ document.querySelector("#sound-toggle").addEventListener("click", () => {
 });
 
 function classifyLine(line, index, roomTitleIndex) {
-  if (line.startsWith("NEW PLAYER QUICK START") || /^  (Names|Looking|Movement|Typing|First step):/.test(line)) return "onboarding";
   if (line.startsWith("QUEST") || line.startsWith("OBJECTIVE") || line.startsWith("KNOWLEDGE CHECK") || line.startsWith("POP QUIZ") || line.startsWith("CONTINUE") || line.startsWith("REGIONAL MAP") || line.startsWith("BREWMUD REGIONAL MAPS") || line.startsWith("Regional Transitions")) return "objective";
   if (line.startsWith("Objectives:")) return "quest-summary";
   if (line.startsWith("YOU ARE HERE")) return "room-title";
@@ -110,6 +110,24 @@ async function api(path, options = {}) {
   return data;
 }
 
+function enterGame() {
+  document.removeEventListener("keydown", continueFromInstructions);
+  document.querySelector("#instructions").hidden = true;
+  document.querySelector("#game").hidden = false;
+  append(pendingWelcome);
+  pendingWelcome = "";
+  commandInput.focus();
+  pollTimer = window.setInterval(poll, 900);
+}
+
+function continueFromInstructions(event) {
+  if (document.querySelector("#instructions").hidden) return;
+  if (event) event.preventDefault();
+  enterGame();
+}
+
+document.querySelector("#instructions-continue").addEventListener("click", continueFromInstructions);
+
 document.querySelector("#login-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   if (soundEnabled) ensureAudio();
@@ -126,12 +144,16 @@ document.querySelector("#login-form").addEventListener("submit", async (event) =
       }),
     });
     token = data.token;
+    pendingWelcome = data.output;
     document.querySelector("#login").hidden = true;
-    document.querySelector("#game").hidden = false;
     document.querySelector("#status").textContent = "connected";
-    append(data.output);
-    commandInput.focus();
-    pollTimer = window.setInterval(poll, 900);
+    if (data.show_instructions) {
+      document.querySelector("#instructions").hidden = false;
+      document.addEventListener("keydown", continueFromInstructions);
+      document.querySelector("#instructions-continue").focus();
+    } else {
+      enterGame();
+    }
   } catch (err) {
     error.textContent = err.message;
   }

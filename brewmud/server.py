@@ -42,9 +42,7 @@ class MUDServer:
         name = self._normalized_name(requested_name)
         with self._lock:
             account = self._accounts.register(name, password)
-            return self._open_session(
-                account, "Account created. Your progress will save automatically.", new_account=True
-            )
+            return self._open_session(account, "Account created. Your progress will save automatically.")
 
     def login(self, requested_name: str, password: str) -> tuple[str, str]:
         name = self._normalized_name(requested_name)
@@ -52,24 +50,14 @@ class MUDServer:
             account = self._accounts.authenticate(name, password)
             return self._open_session(account, "Welcome back. Your saved progress has been restored.")
 
-    def _open_session(self, account: Account, notice: str, *, new_account: bool = False) -> tuple[str, str]:
+    def _open_session(self, account: Account, notice: str) -> tuple[str, str]:
         if any(player.account_id == account.id for player in self._players.values()):
             raise ValueError("That account is already logged in.")
         token = secrets.token_urlsafe(24)
         session = PlayerSession(account.id, account.name, Game(state=account.state))
         self._players[token] = session
         self._broadcast(session.game.state.room, f"{account.name} checks in for a brewery shift.", exclude=token)
-        quick_start = ""
-        if new_account:
-            quick_start = (
-                "\n\nNEW PLAYER QUICK START\n"
-                "  Names: You can shorten resident names—TALK TRAIN works for the Training Coordinator.\n"
-                "  Looking: L SENSOR works like LOOK DISSOLVED-OXYGEN SENSOR.\n"
-                "  Movement: Use N, S, E, W, U, D, I, or O for directions.\n"
-                "  Typing: Capitalization does not matter. Type HELP whenever you need the full list.\n"
-                "  First step: TALK TRAIN"
-            )
-        welcome = notice + quick_start + "\n\n" + session.game.introduction() + self._occupants_text(token)
+        welcome = notice + "\n\n" + session.game.introduction() + self._occupants_text(token)
         self._save_session(session)
         return token, welcome
 

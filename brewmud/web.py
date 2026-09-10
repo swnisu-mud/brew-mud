@@ -82,7 +82,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 token, output = self.server.world.login(
                     str(body.get("name", "")), str(body.get("password", ""))
                 )
-                self._json({"token": token, "output": output})
+                self._json({"token": token, "output": output, "show_instructions": False})
             except ValueError as exc:
                 self._json({"error": str(exc)}, HTTPStatus.BAD_REQUEST)
             return
@@ -91,7 +91,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 token, output = self.server.world.register(
                     str(body.get("name", "")), str(body.get("password", ""))
                 )
-                self._json({"token": token, "output": output}, HTTPStatus.CREATED)
+                self._json({"token": token, "output": output, "show_instructions": True}, HTTPStatus.CREATED)
             except ValueError as exc:
                 self._json({"error": str(exc)}, HTTPStatus.BAD_REQUEST)
             return

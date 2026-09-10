@@ -222,13 +222,12 @@ class MultiplayerTests(unittest.TestCase):
         self.assertEqual(server._players[restored].game.state.insight, saved_insight)
         self.assertEqual(server._players[restored].game.state.quest_stages, {"orientation": 0})
 
-    def test_new_account_gets_short_command_instructions_once(self):
+    def test_instruction_screen_is_not_mixed_into_game_output(self):
         server = MUDServer(":memory:")
         self.addCleanup(server.close)
         token, welcome = server.register("Alice", "barley-123")
-        self.assertIn("NEW PLAYER QUICK START", welcome)
-        self.assertIn("TALK TRAIN", welcome)
-        self.assertIn("Capitalization does not matter", welcome)
+        self.assertNotIn("NEW PLAYER QUICK START", welcome)
+        self.assertIn("BREWMUD: The Biochemistry of Beer", welcome)
         server.logout(token)
         _restored, returning = server.login("Alice", "barley-123")
         self.assertNotIn("NEW PLAYER QUICK START", returning)
@@ -293,7 +292,10 @@ class AssetTests(unittest.TestCase):
         self.assertIn("BrewMUD", (static / "index.html").read_text())
         self.assertIn("brew>", (static / "app.js").read_text())
         self.assertNotIn("mito>", (static / "app.js").read_text())
-        self.assertIn("TALK TRAIN", (static / "index.html").read_text())
+        instructions = (static / "index.html").read_text()
+        self.assertIn("TALK TRAIN", instructions)
+        self.assertIn("Press any key to continue", instructions)
+        self.assertIn("show_instructions", (static / "app.js").read_text())
 
     def test_render_blueprint_uses_web_service_and_health_check(self):
         blueprint = (Path(__file__).parents[1] / "render.yaml").read_text()

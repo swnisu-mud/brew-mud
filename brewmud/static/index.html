@@ -23,7 +23,6 @@
       <div>
         <h2 id="login-title">Enter the brewery</h2>
         <p>Log in to continue, or create an account to save your progress automatically.</p>
-        <p class="shortcut-preview">Inside the game, names can be shortened: <code>TALK TRAIN</code> works for the Training Coordinator.</p>
       </div>
       <form id="login-form">
         <div class="account-fields">
@@ -39,6 +38,32 @@
         <p class="account-note">Use at least 8 characters. Password reset is not available in this first version.</p>
         <p id="login-error" class="error" role="alert"></p>
       </form>
+    </section>
+
+    <section id="instructions" class="instructions" aria-labelledby="instructions-title" hidden>
+      <p class="eyebrow">Your first brewery shift</p>
+      <h2 id="instructions-title">How to play BrewMUD</h2>
+      <div class="instruction-grid">
+        <div>
+          <h3>Explore</h3>
+          <p>Each location lists its residents and exits. Move with <code>N</code>, <code>S</code>, <code>E</code>, <code>W</code>, <code>U</code>, <code>D</code>, <code>I</code>, or <code>O</code>. Use <code>MAP</code> when you lose your bearings.</p>
+        </div>
+        <div>
+          <h3>Shorten names</h3>
+          <p>You rarely need to type a full name. <code>TALK TRAIN</code> works for the Training Coordinator, and <code>L SENSOR</code> works like <code>LOOK DISSOLVED-OXYGEN SENSOR</code>. Capitalization does not matter.</p>
+        </div>
+        <div>
+          <h3>Take assignments</h3>
+          <p>Talk to brewery residents; many will ask for help. Your current objectives appear with room descriptions. Use <code>JOURNAL</code> for details or <code>HINT</code> for directions.</p>
+        </div>
+        <div>
+          <h3>Work together</h3>
+          <p>Use <code>SAY</code> to speak locally, <code>WHO</code> to find other players, and <code>FOLLOW</code> to travel together. Pop quizzes are individual, but discussion is encouraged.</p>
+        </div>
+      </div>
+      <p class="first-step">Begin by entering <code>TALK TRAIN</code> when you reach the brewery.</p>
+      <p class="continue-prompt">Press any key to continue</p>
+      <button id="instructions-continue" type="button">Continue</button>
     </section>
 
     <section id="game" class="game" hidden>

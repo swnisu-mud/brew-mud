@@ -88,6 +88,11 @@ class CommandTests(unittest.TestCase):
     def test_case_insensitive_commands_and_names(self):
         self.assertIn("QUEST STARTED", self.game.execute("TaLk COORDINATOR"))
 
+    def test_coordinator_sets_an_initial_assignment_not_a_tour(self):
+        intro = Game(pop_quizzes_enabled=False).introduction()
+        self.assertNotIn("full brewery tour", intro.casefold())
+        self.assertIn("ready to get started", intro.casefold())
+
     def test_fuzzy_npc_look(self):
         self.game.state.room = "germination_floor"
         self.assertIn("Gibberellic Acid", self.game.execute("look gibberlic acid"))

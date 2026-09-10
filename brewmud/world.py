@@ -330,7 +330,7 @@ for key, (name, feature_name, fact) in _room_info.items():
 
 
 AMBIENT_SPEECH = {
-    "brewery_gate": 'The Training Coordinator calls, “Talk to me when you are ready for the full brewery tour.”',
+    "brewery_gate": 'The Training Coordinator calls, “Talk to me when you are ready to get started.”',
     "cure_floor": 'The Head Maltster mutters, “Another uneven lot. I could use a biochemist.”',
     "water_lab": 'The Water Chemist says, “Never copy a city profile without asking what each ion is doing.”',
     "mash_tun": 'The Head Brewer frowns at an iodine test. “Conversion should be further along.”',

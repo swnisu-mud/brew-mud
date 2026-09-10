@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BrewMUD</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div>
+        <p class="eyebrow">A biochemical multiplayer brewery</p>
+        <h1>Brew<span>MUD</span></h1>
+      </div>
+      <div class="connection-controls">
+        <button id="sound-toggle" class="sound-toggle" type="button" aria-pressed="true">Sound: on</button>
+        <div id="status" class="status">offline</div>
+      </div>
+    </header>
+
+    <section id="login" class="login" aria-labelledby="login-title">
+      <div>
+        <h2 id="login-title">Enter the brewery</h2>
+        <p>Choose a temporary trainee name for this session.</p>
+      </div>
+      <form id="login-form">
+        <label for="name">Trainee name</label>
+        <div class="input-row">
+          <input id="name" name="name" minlength="2" maxlength="24" autocomplete="nickname" required autofocus>
+          <button type="submit">Connect</button>
+        </div>
+        <p id="login-error" class="error" role="alert"></p>
+      </form>
+    </section>
+
+    <section id="game" class="game" hidden>
+      <div id="terminal" class="terminal" role="log" aria-live="polite" aria-label="Game output"></div>
+      <form id="command-form" class="command-row">
+        <label for="command">brew&gt;</label>
+        <input id="command" autocomplete="off" spellcheck="false" aria-label="Command">
+        <button type="submit">Send</button>
+      </form>
+      <p class="shortcut">Try <code>look</code>, <code>map</code>, <code>say hello</code>, <code>who</code>, or <code>help</code>.</p>
+    </section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

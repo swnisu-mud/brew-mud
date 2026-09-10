@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+.venv/
+brewmud-save.json
+*.egg-info/
+dist/
+build/

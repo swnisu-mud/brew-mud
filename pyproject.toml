@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "brew-mud"
+version = "0.1.0"
+description = "A multiplayer educational MUD about the biochemistry of brewing"
+requires-python = ">=3.10"
+
+[project.scripts]
+brew-mud = "brewmud.cli:main"
+brew-mud-web = "brewmud.web:main"
+
+[tool.setuptools.package-data]
+brewmud = ["static/*"]
+
+[tool.setuptools.packages.find]
+include = ["brewmud*"]

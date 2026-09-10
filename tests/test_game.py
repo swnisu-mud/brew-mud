@@ -296,6 +296,7 @@ class AssetTests(unittest.TestCase):
         self.assertIn("TALK TRAIN", instructions)
         self.assertIn("Press any key to continue", instructions)
         self.assertIn("show_instructions", (static / "app.js").read_text())
+        self.assertLess(instructions.index("Create new account"), instructions.index("Log in</button>"))
 
     def test_render_blueprint_uses_web_service_and_health_check(self):
         blueprint = (Path(__file__).parents[1] / "render.yaml").read_text()

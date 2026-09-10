@@ -55,7 +55,8 @@ label { color: var(--cyan); }
 .input-row, .command-row { display: flex; gap: .65rem; align-items: center; }
 .account-fields { display: grid; grid-template-columns: auto 1fr; gap: .7rem 1rem; align-items: center; }
 .account-actions { display: flex; gap: .65rem; margin-top: 1rem; }
-.account-actions .secondary { color: var(--bright); background: transparent; border: 1px solid var(--bright); }
+.account-actions button { color: var(--ink); background: transparent; border: 1px solid var(--muted); }
+.account-actions button:hover, .account-actions button:focus-visible { border-color: var(--bright); }
 .account-note { color: var(--muted); font-size: .75rem; margin: .8rem 0 0; }
 input, button { font: inherit; }
 input {

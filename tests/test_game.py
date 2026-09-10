@@ -93,6 +93,10 @@ class CommandTests(unittest.TestCase):
         self.assertNotIn("full brewery tour", intro.casefold())
         self.assertIn("ready to get started", intro.casefold())
 
+    def test_coordinator_describes_a_linked_brewery(self):
+        response = self.game.execute("talk coordinator")
+        self.assertIn("not just a row of tanks", response)
+
     def test_fuzzy_npc_look(self):
         self.game.state.room = "germination_floor"
         self.assertIn("Gibberellic Acid", self.game.execute("look gibberlic acid"))

@@ -34,7 +34,7 @@ def E(target: str, destination: str, objective: str, result: str) -> Step:
 
 QUESTS: dict[str, Quest] = {
     "orientation": Quest("First Day in the Brewery", "training_coordinator",
-        "“A brewery is a linked biochemical system, not a row of tanks. Meet each department lead and trace grain-to-glass production,” says the Training Coordinator.", (
+        "“A brewery is a linked biochemical system, not just a row of tanks. Meet each department lead and trace grain-to-glass production,” says the Training Coordinator.", (
         T("head_maltster", "Meet the Head Maltster.", "Malting makes stored reserves accessible while preserving useful enzymes."),
         T("water_chemist", "Meet the Water Chemist.", "Water establishes the chemical environment for mash enzymes, yeast, and flavor."),
         T("lauter_operator", "Meet the Lauter Operator.", "Lautering separates sweet wort from spent grain through a permeable husk bed."),

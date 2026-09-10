@@ -2,6 +2,9 @@ __pycache__/
 *.py[cod]
 .venv/
 brewmud-save.json
+brewmud.db
+brewmud.db-shm
+brewmud.db-wal
 *.egg-info/
 dist/
 build/

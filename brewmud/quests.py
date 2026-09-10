@@ -35,12 +35,12 @@ def E(target: str, destination: str, objective: str, result: str) -> Step:
 QUESTS: dict[str, Quest] = {
     "orientation": Quest("First Day in the Brewery", "training_coordinator",
         "“A brewery is a linked biochemical system, not just a row of tanks. Meet each department lead and trace grain-to-glass production,” says the Training Coordinator.", (
-        T("head_maltster", "Meet the Head Maltster.", "Malting makes stored reserves accessible while preserving useful enzymes."),
-        T("water_chemist", "Meet the Water Chemist.", "Water establishes the chemical environment for mash enzymes, yeast, and flavor."),
-        T("lauter_operator", "Meet the Lauter Operator.", "Lautering separates sweet wort from spent grain through a permeable husk bed."),
-        T("cellar_manager", "Meet the Cellar Manager.", "Healthy yeast transform wort chemistry into beer chemistry."),
-        T("hop_breeder", "Meet the Hop Breeder.", "Hop genetics influence acids, oils, disease resistance, and agronomic traits."),
-        T("packaging_lead", "Meet the Packaging Lead.", "Packaging must preserve the beer against oxygen, light, and contamination."),
+        T("head_maltster", "Find and meet the Head Maltster.", "Malting makes stored reserves accessible while preserving useful enzymes."),
+        T("water_chemist", "Find and meet the Water Chemist.", "Water establishes the chemical environment for mash enzymes, yeast, and flavor."),
+        T("lauter_operator", "Find and meet the Lauter Operator.", "Lautering separates sweet wort from spent grain through a permeable husk bed."),
+        T("cellar_manager", "Find and meet the Cellar Manager.", "Healthy yeast transform wort chemistry into beer chemistry."),
+        T("hop_breeder", "Find and meet the Hop Breeder.", "Hop genetics influence acids, oils, disease resistance, and agronomic traits."),
+        T("packaging_lead", "Find and meet the Packaging Lead.", "Packaging must preserve the beer against oxygen, light, and contamination."),
         T("training_coordinator", "Return to the Training Coordinator.", "“Now follow the problems. Every department has work for a biochemist.”")), 30),
 
     "malt_house": Quest("Wake the Sleeping Grain", "head_maltster",

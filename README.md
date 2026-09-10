@@ -50,7 +50,7 @@ map
 
 ## Commands
 
-`LOOK`, `TALK`, compass directions or `GO`, `JOURNAL`, `HINT`, `MAP`, `NOTES`, `STATUS`, `QUIZ`, `PAUSE`, `A`–`D`, `SAVE`, `LOAD`, and `QUIT` work in solo and browser play. Browser sessions also add `SAY`, `WHO`, `FOLLOW`, and `UNFOLLOW`.
+`LOOK`, `TALK`, compass directions or `GO`, `JOURNAL`, `HINT`, `MAP`, `NOTES`, `STATUS`, `QUIZ`, `PAUSE`, `A`–`D`, and `QUIT` work in solo and browser play. Browser sessions also add `SAY`, `WHO`, `FOLLOW`, and `UNFOLLOW`; account progress saves automatically. The solo terminal additionally supports file-based `SAVE` and `LOAD`.
 
 Quest NPCs announce problems in first-arrival dialogue. Talking to a quest giver starts the quest, and a player can keep several active objectives at once. `JOURNAL` records active and discovered work; `HINT` calculates a shortest route to every active objective.
 
@@ -104,6 +104,6 @@ GitHub stores the code; hosting the running multiplayer application is a separat
 
 The Render start command is `python -m brewmud.web --host 0.0.0.0`. The public bind address is required by Render; local runs remain bound to `127.0.0.1` by default.
 
-The Blueprint initially selects Render's free compute plan. Free services sleep after inactivity, so the first visitor may wait while the service wakes. Before classroom use, the service can be upgraded from its **Compute** page to the smallest paid plan without changing BrewMUD's code.
+The Blueprint selects Render's smallest paid compute plan and attaches a 1 GB persistent disk at `/var/data`. Browser accounts are stored in `/var/data/brewmud.db` so they survive service restarts and deployments.
 
-At this prototype stage, player sessions and progression live in server memory. A restart or redeploy disconnects current players and resets their server-side sessions. Durable accounts, a database, instructor controls, and moderation should be added before using the game for graded work.
+Player presence, chat, and following remain in server memory, so a restart or redeploy disconnects current players. Account progress survives. Password reset, instructor controls, and moderation are not included in this first account version.

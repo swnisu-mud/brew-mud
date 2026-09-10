@@ -59,19 +59,17 @@ class Game:
             self.state.learned_facts.add(room.key)
         visible = [NPCS[k].name for k in room.npcs if k != self.state.companion]
         lines = [room.name, room.description]
+        if self.state.quest_stages:
+            active = list(self.state.quest_stages.items())
+            objectives = [QUESTS[key].steps[stage].objective for key, stage in active[:2]]
+            if len(active) > 2:
+                objectives.append(f"+{len(active) - 2} more (JOURNAL)")
+            lines.append("Objectives: " + " | ".join(objectives))
         if visible:
             lines.append("Nearby: " + ", ".join(visible) + ".")
         lines.append("Exits: " + ", ".join(room.exits) + ".")
         if self.state.companion:
             lines.append(f"{NPCS[self.state.companion].name} is following you.")
-        if self.state.quest_stages:
-            lines.append("\nQUEST TRACKER")
-            active = list(self.state.quest_stages.items())
-            for quest_key, stage in active[:3]:
-                quest = QUESTS[quest_key]
-                lines.append(f"  • {quest.title}: {quest.steps[stage].objective}")
-            if len(active) > 3:
-                lines.append(f"  • +{len(active) - 3} more — type JOURNAL")
         if first and room.key in AMBIENT_SPEECH:
             lines.append("\n" + AMBIENT_SPEECH[room.key])
         if first:
@@ -369,7 +367,7 @@ class Game:
                 "  NOTES              Review discovered biochemical facts\n  STATUS             Show Insight, rank, quests, and quizzes\n"
                 "  QUIZ / RESUME      Resume a paused pop quiz\n  PAUSE              Pause a quiz to investigate\n"
                 "  A / B / C / D      Answer a knowledge check\n  MAP [region]        Show a compact regional map; MAP ALL lists regions\n"
-                "  SAVE / LOAD [file] Save or restore progress\n  QUIT                End the session")
+                "  SAVE / LOAD [file] Solo-terminal files; browser accounts save automatically\n  QUIT                End the session")
 
     def save(self, filename: str) -> str:
         path = Path(filename).expanduser()

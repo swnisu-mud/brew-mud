@@ -75,7 +75,8 @@ document.querySelector("#sound-toggle").addEventListener("click", () => {
 });
 
 function classifyLine(line, index, roomTitleIndex) {
-  if (line.startsWith("QUEST") || line.startsWith("OBJECTIVE") || line.startsWith("  •") || line.startsWith("KNOWLEDGE CHECK") || line.startsWith("POP QUIZ") || line.startsWith("CONTINUE") || line.startsWith("REGIONAL MAP") || line.startsWith("BREWMUD REGIONAL MAPS") || line.startsWith("Regional Transitions")) return "objective";
+  if (line.startsWith("QUEST") || line.startsWith("OBJECTIVE") || line.startsWith("KNOWLEDGE CHECK") || line.startsWith("POP QUIZ") || line.startsWith("CONTINUE") || line.startsWith("REGIONAL MAP") || line.startsWith("BREWMUD REGIONAL MAPS") || line.startsWith("Regional Transitions")) return "objective";
+  if (line.startsWith("Objectives:")) return "quest-summary";
   if (line.startsWith("YOU ARE HERE")) return "room-title";
   if (index === roomTitleIndex) return "room-title";
   if (line.startsWith("Exits:") || line.startsWith("Local routes:")) return "exits";
@@ -113,11 +114,15 @@ document.querySelector("#login-form").addEventListener("submit", async (event) =
   if (soundEnabled) ensureAudio();
   const error = document.querySelector("#login-error");
   error.textContent = "";
+  const action = event.submitter?.dataset.action || "login";
   try {
-    const data = await api("/api/login", {
+    const data = await api(`/api/${action === "register" ? "register" : "login"}`, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({name: document.querySelector("#name").value}),
+      body: JSON.stringify({
+        name: document.querySelector("#name").value,
+        password: document.querySelector("#password").value,
+      }),
     });
     token = data.token;
     document.querySelector("#login").hidden = true;

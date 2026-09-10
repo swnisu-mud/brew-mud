@@ -7,6 +7,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from brewmud.accounts import AccountStore
 from brewmud.game import Game
 from brewmud.quests import QUESTS
 from brewmud.quizzes import QUIZZES
@@ -114,15 +115,16 @@ class CommandTests(unittest.TestCase):
     def test_room_description_tracks_active_objectives(self):
         self.game.talk("training coordinator")
         room = self.game.describe_room()
-        self.assertIn("QUEST TRACKER", room)
-        self.assertIn("First Day in the Brewery: Meet the Head Maltster.", room)
+        self.assertIn("Objectives: Find and meet the Head Maltster.", room)
+        self.assertNotIn("First Day in the Brewery:", room)
 
     def test_room_tracker_is_compact_when_many_quests_are_active(self):
         keys = list(QUESTS)[:5]
         self.game.state.quest_stages = {key: 0 for key in keys}
         room = self.game.describe_room()
-        self.assertEqual(room.count("  •"), 4)
-        self.assertIn("+2 more — type JOURNAL", room)
+        objective_line = next(line for line in room.splitlines() if line.startswith("Objectives:"))
+        self.assertEqual(objective_line.count(" | "), 2)
+        self.assertIn("+3 more (JOURNAL)", objective_line)
 
     def test_hint_routes_to_each_active_objective(self):
         self.game.talk("coordinator")
@@ -187,21 +189,91 @@ class QuizTests(unittest.TestCase):
 
 class MultiplayerTests(unittest.TestCase):
     def test_chat_presence_and_following(self):
-        server = MUDServer()
-        alice, _ = server.login("Alice")
-        bob, _ = server.login("Bob")
+        server = MUDServer(":memory:")
+        self.addCleanup(server.close)
+        alice, _ = server.register("Alice", "barley-123")
+        bob, _ = server.register("Bob", "maltose-123")
         self.assertIn("Alice says", server.command(alice, "say Ready?") + "\n" + "\n".join(server.poll(bob)))
         self.assertIn("begin following", server.command(bob, "follow Alice"))
         server.command(alice, "east")
         self.assertEqual(server._players[alice].game.state.room, server._players[bob].game.state.room)
 
     def test_players_have_independent_quest_state(self):
-        server = MUDServer()
-        alice, _ = server.login("Alice")
-        bob, _ = server.login("Bob")
+        server = MUDServer(":memory:")
+        self.addCleanup(server.close)
+        alice, _ = server.register("Alice", "barley-123")
+        bob, _ = server.register("Bob", "maltose-123")
         server.command(alice, "talk coordinator")
         self.assertIn("orientation", server._players[alice].game.state.quest_stages)
         self.assertNotIn("orientation", server._players[bob].game.state.quest_stages)
+
+    def test_account_progress_survives_logout_and_login(self):
+        server = MUDServer(":memory:")
+        self.addCleanup(server.close)
+        token, _ = server.register("Alice", "barley-123")
+        server.command(token, "talk coordinator")
+        server.command(token, "north")
+        saved_room = server._players[token].game.state.room
+        saved_insight = server._players[token].game.state.insight
+        server.logout(token)
+        restored, welcome = server.login("alice", "barley-123")
+        self.assertIn("saved progress has been restored", welcome)
+        self.assertEqual(server._players[restored].game.state.room, saved_room)
+        self.assertEqual(server._players[restored].game.state.insight, saved_insight)
+        self.assertEqual(server._players[restored].game.state.quest_stages, {"orientation": 0})
+
+    def test_account_progress_survives_complete_server_restart(self):
+        with tempfile.TemporaryDirectory() as directory:
+            database = Path(directory) / "accounts.db"
+            first = MUDServer(database)
+            token, _ = first.register("Alice", "barley-123")
+            first.command(token, "talk coordinator")
+            first.command(token, "north")
+            expected_room = first._players[token].game.state.room
+            first.close()
+
+            second = MUDServer(database)
+            try:
+                restored, _ = second.login("Alice", "barley-123")
+                self.assertEqual(second._players[restored].game.state.room, expected_room)
+                self.assertEqual(second._players[restored].game.state.quest_stages, {"orientation": 0})
+            finally:
+                second.close()
+
+    def test_wrong_password_and_duplicate_account_are_rejected(self):
+        server = MUDServer(":memory:")
+        self.addCleanup(server.close)
+        token, _ = server.register("Alice", "barley-123")
+        with self.assertRaisesRegex(ValueError, "already registered"):
+            server.register("alice", "different-123")
+        server.logout(token)
+        with self.assertRaisesRegex(ValueError, "Incorrect"):
+            server.login("Alice", "wrong-pass")
+
+    def test_browser_file_save_and_load_are_disabled(self):
+        server = MUDServer(":memory:")
+        self.addCleanup(server.close)
+        token, _ = server.register("Alice", "barley-123")
+        self.assertIn("saves automatically", server.command(token, "save ../../unsafe.json"))
+        self.assertIn("saves automatically", server.command(token, "load ../../unsafe.json"))
+
+
+class AccountStoreTests(unittest.TestCase):
+    def test_passwords_are_hashed_and_state_is_serialized(self):
+        store = AccountStore(":memory:")
+        self.addCleanup(store.close)
+        account = store.register("Cellar Student", "not-plain-text")
+        row = store._connection.execute("SELECT * FROM accounts").fetchone()
+        self.assertNotEqual(bytes(row["password_hash"]), b"not-plain-text")
+        account.state.insight = 47
+        store.save(account.id, account.state)
+        self.assertEqual(store.authenticate("cellar student", "not-plain-text").state.insight, 47)
+
+    def test_short_password_is_rejected(self):
+        store = AccountStore(":memory:")
+        self.addCleanup(store.close)
+        with self.assertRaisesRegex(ValueError, "at least 8"):
+            store.register("Alice", "short")
 
 
 class AssetTests(unittest.TestCase):
@@ -216,6 +288,8 @@ class AssetTests(unittest.TestCase):
         self.assertIn("type: web", blueprint)
         self.assertIn("python -m brewmud.web --host 0.0.0.0", blueprint)
         self.assertIn("healthCheckPath: /api/status", blueprint)
+        self.assertIn("mountPath: /var/data", blueprint)
+        self.assertIn("BREWMUD_DB_PATH", blueprint)
 
     def test_render_port_environment_selects_public_bind_default(self):
         from brewmud import web

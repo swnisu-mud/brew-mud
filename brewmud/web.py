@@ -23,7 +23,11 @@ class BrewMUDHTTPServer(ThreadingHTTPServer):
 
     def __init__(self, server_address, handler_class=BaseHTTPRequestHandler):
         super().__init__(server_address, handler_class)
-        self.world = MUDServer()
+        self.world = MUDServer(os.environ.get("BREWMUD_DB_PATH", "brewmud.db"))
+
+    def server_close(self) -> None:
+        self.world.close()
+        super().server_close()
 
 
 class RequestHandler(BaseHTTPRequestHandler):
@@ -75,8 +79,19 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         if self.path == "/api/login":
             try:
-                token, output = self.server.world.login(str(body.get("name", "")))
+                token, output = self.server.world.login(
+                    str(body.get("name", "")), str(body.get("password", ""))
+                )
                 self._json({"token": token, "output": output})
+            except ValueError as exc:
+                self._json({"error": str(exc)}, HTTPStatus.BAD_REQUEST)
+            return
+        if self.path == "/api/register":
+            try:
+                token, output = self.server.world.register(
+                    str(body.get("name", "")), str(body.get("password", ""))
+                )
+                self._json({"token": token, "output": output}, HTTPStatus.CREATED)
             except ValueError as exc:
                 self._json({"error": str(exc)}, HTTPStatus.BAD_REQUEST)
             return

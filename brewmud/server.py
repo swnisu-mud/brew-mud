@@ -4,14 +4,17 @@ import re
 import secrets
 import threading
 from dataclasses import dataclass, field
+from pathlib import Path
 
+from .accounts import Account, AccountStore
 from .game import Game
 
 
 @dataclass
 class PlayerSession:
+    account_id: int
     name: str
-    game: Game = field(default_factory=Game)
+    game: Game
     messages: list[str] = field(default_factory=list)
     following: str | None = None
 
@@ -23,29 +26,47 @@ class MUDServer:
     belong to individual players; later party quests can live alongside them.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, database_path: str | Path = "brewmud.db") -> None:
         self._players: dict[str, PlayerSession] = {}
         self._lock = threading.RLock()
+        self._accounts = AccountStore(database_path)
 
-    def login(self, requested_name: str) -> tuple[str, str]:
+    @staticmethod
+    def _normalized_name(requested_name: str) -> str:
         name = " ".join(requested_name.strip().split())
         if not re.fullmatch(r"[A-Za-z][A-Za-z0-9 _-]{1,23}", name):
             raise ValueError("Names must be 2–24 characters and begin with a letter.")
+        return name
+
+    def register(self, requested_name: str, password: str) -> tuple[str, str]:
+        name = self._normalized_name(requested_name)
         with self._lock:
-            if any(player.name.casefold() == name.casefold() for player in self._players.values()):
-                raise ValueError("That name is already in use.")
-            token = secrets.token_urlsafe(24)
-            session = PlayerSession(name=name)
-            self._players[token] = session
-            self._broadcast(session.game.state.room, f"{name} checks in for a brewery shift.", exclude=token)
-            welcome = session.game.introduction() + self._occupants_text(token)
-            return token, welcome
+            account = self._accounts.register(name, password)
+            return self._open_session(account, "Account created. Your progress will save automatically.")
+
+    def login(self, requested_name: str, password: str) -> tuple[str, str]:
+        name = self._normalized_name(requested_name)
+        with self._lock:
+            account = self._accounts.authenticate(name, password)
+            return self._open_session(account, "Welcome back. Your saved progress has been restored.")
+
+    def _open_session(self, account: Account, notice: str) -> tuple[str, str]:
+        if any(player.account_id == account.id for player in self._players.values()):
+            raise ValueError("That account is already logged in.")
+        token = secrets.token_urlsafe(24)
+        session = PlayerSession(account.id, account.name, Game(state=account.state))
+        self._players[token] = session
+        self._broadcast(session.game.state.room, f"{account.name} checks in for a brewery shift.", exclude=token)
+        welcome = notice + "\n\n" + session.game.introduction() + self._occupants_text(token)
+        self._save_session(session)
+        return token, welcome
 
     def logout(self, token: str) -> None:
         with self._lock:
             session = self._require(token)
             room = session.game.state.room
             name = session.name
+            self._save_session(session)
             self._end_follow_relationships(token)
             del self._players[token]
             self._broadcast(room, f"{name} has left the brewery.")
@@ -58,6 +79,8 @@ class MUDServer:
                 return ""
 
             verb, _, argument = command.partition(" ")
+            if verb.casefold() in {"save", "load"}:
+                return "Browser progress saves automatically to your account after every game command."
             if verb.lower() in {"say", "chat"}:
                 return self._say(token, argument)
             if verb.lower() == "who":
@@ -87,6 +110,7 @@ class MUDServer:
             new_room = session.game.state.room
             if verb.lower() in {"quit", "exit"}:
                 name = session.name
+                self._save_session(session)
                 self._end_follow_relationships(token)
                 del self._players[token]
                 self._broadcast(old_room, f"{name} has left the brewery.")
@@ -99,6 +123,7 @@ class MUDServer:
                 response += self._occupants_text(token)
             elif pending_room_before and session.game.state.pending_room_description is None:
                 response += self._occupants_text(token)
+            self._save_session(session)
             return response
 
     def poll(self, token: str) -> list[str]:
@@ -111,6 +136,12 @@ class MUDServer:
     def player_count(self) -> int:
         with self._lock:
             return len(self._players)
+
+    def close(self) -> None:
+        with self._lock:
+            for session in self._players.values():
+                self._save_session(session)
+            self._accounts.close()
 
     def _say(self, token: str, message: str) -> str:
         session = self._require(token)
@@ -260,6 +291,7 @@ class MUDServer:
         if destination == origin:
             for group_token in group[1:]:
                 self._players[group_token].game.pop_quizzes_enabled = quiz_settings[group_token]
+            self._save_session(leader)
             return response
         breakaway = ""
         if previous_leader is not None:
@@ -320,6 +352,8 @@ class MUDServer:
             "" if leader.game.state.pending_room_description is not None
             else self._occupants_text(token)
         )
+        for moved_token in moved:
+            self._save_session(self._players[moved_token])
         return breakaway + movement_results[token] + occupants
 
     def _followers_in_room(self, leader_token: str, room: str) -> list[str]:
@@ -357,3 +391,6 @@ class MUDServer:
             return self._players[token]
         except KeyError as exc:
             raise KeyError("Session not found; please log in again.") from exc
+
+    def _save_session(self, session: PlayerSession) -> None:
+        self._accounts.save(session.account_id, session.game.state)

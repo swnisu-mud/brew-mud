@@ -22,14 +22,20 @@
     <section id="login" class="login" aria-labelledby="login-title">
       <div>
         <h2 id="login-title">Enter the brewery</h2>
-        <p>Choose a temporary trainee name for this session.</p>
+        <p>Log in to continue, or create an account to save your progress automatically.</p>
       </div>
       <form id="login-form">
-        <label for="name">Trainee name</label>
-        <div class="input-row">
-          <input id="name" name="name" minlength="2" maxlength="24" autocomplete="nickname" required autofocus>
-          <button type="submit">Connect</button>
+        <div class="account-fields">
+          <label for="name">Account name</label>
+          <input id="name" name="name" minlength="2" maxlength="24" autocomplete="username" required autofocus>
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" minlength="8" maxlength="128" autocomplete="current-password" required>
         </div>
+        <div class="account-actions">
+          <button type="submit" data-action="login">Log in</button>
+          <button type="submit" data-action="register" class="secondary">Create account</button>
+        </div>
+        <p class="account-note">Use at least 8 characters. Password reset is not available in this first version.</p>
         <p id="login-error" class="error" role="alert"></p>
       </form>
     </section>

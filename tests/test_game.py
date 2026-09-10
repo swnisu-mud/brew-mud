@@ -101,6 +101,19 @@ class CommandTests(unittest.TestCase):
         self.assertIn("First Day", journal)
         self.assertIn("Wake the Sleeping Grain", journal)
 
+    def test_room_description_tracks_active_objectives(self):
+        self.game.talk("training coordinator")
+        room = self.game.describe_room()
+        self.assertIn("QUEST TRACKER", room)
+        self.assertIn("First Day in the Brewery: Meet the Head Maltster.", room)
+
+    def test_room_tracker_is_compact_when_many_quests_are_active(self):
+        keys = list(QUESTS)[:5]
+        self.game.state.quest_stages = {key: 0 for key in keys}
+        room = self.game.describe_room()
+        self.assertEqual(room.count("  •"), 4)
+        self.assertIn("+2 more — type JOURNAL", room)
+
     def test_hint_routes_to_each_active_objective(self):
         self.game.talk("coordinator")
         self.assertIn("Shortest route", self.game.hint())

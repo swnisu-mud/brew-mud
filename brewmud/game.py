@@ -64,6 +64,14 @@ class Game:
         lines.append("Exits: " + ", ".join(room.exits) + ".")
         if self.state.companion:
             lines.append(f"{NPCS[self.state.companion].name} is following you.")
+        if self.state.quest_stages:
+            lines.append("\nQUEST TRACKER")
+            active = list(self.state.quest_stages.items())
+            for quest_key, stage in active[:3]:
+                quest = QUESTS[quest_key]
+                lines.append(f"  • {quest.title}: {quest.steps[stage].objective}")
+            if len(active) > 3:
+                lines.append(f"  • +{len(active) - 3} more — type JOURNAL")
         if first and room.key in AMBIENT_SPEECH:
             lines.append("\n" + AMBIENT_SPEECH[room.key])
         if first:

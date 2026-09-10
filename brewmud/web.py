@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -117,8 +118,10 @@ class RequestHandler(BaseHTTPRequestHandler):
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run the BrewMUD multiplayer web server")
-    parser.add_argument("--host", default="127.0.0.1", help="Address to bind (default: localhost only)")
-    parser.add_argument("--port", default=8000, type=int, help="Port to bind (default: 8000)")
+    parser.add_argument("--host", default=os.environ.get("HOST", "127.0.0.1"),
+                        help="Address to bind (default: localhost only)")
+    parser.add_argument("--port", default=int(os.environ.get("PORT", "8000")), type=int,
+                        help="Port to bind (default: 8000, or the PORT environment variable)")
     args = parser.parse_args()
     server = BrewMUDHTTPServer((args.host, args.port), RequestHandler)
     print(f"BrewMUD is running at http://{args.host}:{args.port}")

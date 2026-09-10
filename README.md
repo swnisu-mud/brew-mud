@@ -93,4 +93,15 @@ The local repository is configured with:
 https://github.com/swnisu-mud/brew-mud.git
 ```
 
-GitHub stores the code; hosting the running multiplayer application is a separate deployment step. For a student-facing deployment, use an application host that can run a persistent Python web process and add accounts/persistence before graded classroom use.
+GitHub stores the code; hosting the running multiplayer application is a separate deployment step. The included `render.yaml` configures a Render web service from this repository.
+
+### Deploy on Render
+
+1. Sign in at <https://dashboard.render.com> using GitHub.
+2. Choose **New > Blueprint** and connect `swnisu-mud/brew-mud`.
+3. Accept the detected `render.yaml` configuration and deploy.
+4. Open the generated `https://...onrender.com` address.
+
+The Blueprint initially selects Render's free compute plan. Free services sleep after inactivity, so the first visitor may wait while the service wakes. Before classroom use, the service can be upgraded from its **Compute** page to the smallest paid plan without changing BrewMUD's code.
+
+At this prototype stage, player sessions and progression live in server memory. A restart or redeploy disconnects current players and resets their server-side sessions. Durable accounts, a database, instructor controls, and moderation should be added before using the game for graded work.

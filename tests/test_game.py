@@ -188,6 +188,12 @@ class AssetTests(unittest.TestCase):
         self.assertIn("brew>", (static / "app.js").read_text())
         self.assertNotIn("mito>", (static / "app.js").read_text())
 
+    def test_render_blueprint_uses_web_service_and_health_check(self):
+        blueprint = (Path(__file__).parents[1] / "render.yaml").read_text()
+        self.assertIn("type: web", blueprint)
+        self.assertIn("python -m brewmud.web", blueprint)
+        self.assertIn("healthCheckPath: /api/status", blueprint)
+
 
 if __name__ == "__main__":
     unittest.main()

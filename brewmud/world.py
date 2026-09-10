@@ -165,10 +165,107 @@ def aliases(key: str, name: str) -> tuple[str, ...]:
     return tuple(sorted(values))
 
 
+NPC_DESCRIPTIONS = {
+    "training_coordinator": "A brewery process map covers the coordinator's clipboard, with arrows linking every operation to measurements made downstream.",
+    "barley_inspector": "The inspector splits representative kernels to compare size, moisture, protein, germination capacity, and signs of pre-harvest damage.",
+    "two_row_kernel": "A magnified barley kernel displays husk, embryo, aleurone, and a starch-rich endosperm in cross-section.",
+    "steep_master": "The maltster tracks kernel moisture and alternates immersion with air rests rather than leaving the living grain continuously submerged.",
+    "oxygen_sensor": "A probe monitors dissolved oxygen during steeping; a falling reading warns that respiring kernels may become oxygen-limited unless water is drained and the grain aerated.",
+    "gibberellic_acid": "A small diterpenoid hormone carries the embryo's germination signal toward receptors in the aleurone layer.",
+    "aleurone_cell": "Secretory vesicles crowd this living cell as it responds to gibberellin by producing alpha-amylase, proteases, and other hydrolases.",
+    "starch_granule": "Concentric semicrystalline layers of amylose and branched amylopectin pack glucose densely inside the endosperm.",
+    "kiln_operator": "The operator balances drying rate, cure temperature, color, flavor development, and survival of malt enzymes.",
+    "head_maltster": "The Head Maltster judges modification by moisture, acrospire growth, friability, aroma, and the accessibility of the endosperm.",
+    "water_chemist": "A water report beside the chemist separates calcium, magnesium, sulfate, chloride, sodium, alkalinity, and pH instead of reducing water to 'hard' or 'soft.'",
+    "ph_meter": "A glass electrode responds to hydrogen-ion activity and reports the logarithmic pH of a cooled, representative sample.",
+    "bicarbonate": "This tetrahedral ion accepts added protons and contributes strongly to the acid-neutralizing capacity called alkalinity.",
+    "calcium_ion": "The divalent ion associates with phosphate chemistry, can help lower mash pH, and stabilizes alpha-amylase against thermal inactivation.",
+    "sulfate_ion": "Sulfate carries no aroma of its own here, but shifts sensory balance toward drier, sharper hop bitterness when present at useful concentrations.",
+    "chloride_ion": "Chloride tends to support palate fullness and apparent sweetness, providing a sensory counterpoint to sulfate rather than literal sugar.",
+    "burton_guide": "The guide compares sulfate-rich Burton water with very soft Pilsen water and bicarbonate-rich waters suited historically to darker grists.",
+    "treatment_chemist": "Activated carbon, acid, salts, reverse osmosis, and dechlorination reagents are labeled by the specific problem each can solve.",
+    "miller": "The miller adjusts paired rollers to crack kernels and expose endosperm while avoiding both intact grain and excessive flour.",
+    "head_brewer": "The brewer compares time, temperature, pH, and iodine tests to determine whether starch conversion follows the intended mash profile.",
+    "protease": "A catalytic cleft positions peptide bonds for hydrolysis, releasing smaller peptides and amino nitrogen during a suitable low-temperature rest.",
+    "beta_amylase": "The enzyme grips a nonreducing starch-chain end and removes maltose units sequentially, stopping at branch-imposed limits.",
+    "alpha_amylase": "The enzyme binds within an alpha-1,4 glucan chain and makes internal cuts that reduce viscosity and create new chain ends.",
+    "gelatinized_starch": "Water and heat have disrupted this granule's ordered packing, exposing flexible glucan chains to amylases.",
+    "mash_out_operator": "The operator raises mash temperature to reduce viscosity and arrest most of the enzymatic balance before separation.",
+    "lauter_operator": "The operator watches pressure and flow above a slotted false bottom, treating the grain itself as the main filter medium.",
+    "husk_keeper": "Interlocking husk fragments hold open liquid channels through the spent-grain bed; crushed flour fills the smallest spaces.",
+    "sparge_technician": "A rotating arm distributes hot liquor gently so extract is rinsed without channeling, compacting the bed, or overextracting husk compounds.",
+    "vorlauf_guide": "The guide returns cloudy first runnings to the top of the bed until suspended particles are captured and wort clarity improves.",
+    "kettle_brewer": "A boil schedule marks sterilization, enzyme inactivation, hot-break formation, volatile removal, and hop additions by purpose.",
+    "boil_engineer": "The engineer checks boil vigor and vapor escape because weak or covered boiling can retain unwanted volatile sulfur compounds.",
+    "dosing_brewer": "Separate bins labeled bittering, flavor, and aroma show how contact time changes the contribution of the same hops.",
+    "whirlpool_operator": "The operator directs tangential wort flow that gathers dense hop and proteinaceous trub into a central cone.",
+    "cooling_operator": "Thin alternating plates exchange heat rapidly while keeping cooling water physically separate from sanitary wort.",
+    "oxygenation_tech": "A sterile stone disperses small oxygen bubbles into cooled wort before pitching, when yeast membrane synthesis can use them.",
+    "qa_technician": "Calibrated hydrometers, density meters, sample labels, and duplicate records surround a technician who distrusts unverified single readings.",
+    "ale_yeast": "An oval budding S. cerevisiae cell carries transporters and metabolic regulation suited to comparatively warm ale fermentation.",
+    "lager_yeast": "This S. pastorianus cell combines ancestry from two Saccharomyces species and performs well in cool lager fermentation.",
+    "yeast_culturist": "The culturist counts stained cells in a hemocytometer, distinguishing cell number from the fraction still viable.",
+    "lipid_specialist": "A membrane model shows ergosterol and unsaturated fatty acids controlling fluidity, permeability, and transporter function.",
+    "maltose_permease": "The transmembrane carrier couples downhill proton movement to uphill maltose uptake across the yeast plasma membrane.",
+    "maltase": "The intracellular alpha-glucosidase closes around maltose and hydrolyzes its glycosidic bond to release two glucose molecules.",
+    "alpha_acetolactate": "This unstable branched-chain-amino-acid-pathway intermediate can escape the cell and form diacetyl by oxidative decarboxylation.",
+    "alcohol_dehydrogenase": "The enzyme transfers reducing equivalents from NADH to acetaldehyde, producing ethanol while restoring NAD+ for glycolysis.",
+    "ergosterol": "A rigid fungal sterol nests among membrane lipids, moderating membrane order much as cholesterol does in animal cells.",
+    "ester_chemist": "Standards of isoamyl acetate and ethyl acetate accompany pathways that join alcohol-derived and acyl groups into volatile esters.",
+    "diacetyl_molecule": "Two adjacent carbonyl groups give this small vicinal diketone a striking buttery aroma at low concentration.",
+    "hydrogen_sulfide": "A tiny volatile sulfur compound emerges from yeast sulfur metabolism with the unmistakable warning of rotten eggs.",
+    "dms_molecule": "Dimethyl sulfide rises readily from warm wort and evokes cooked corn or vegetables rather than hydrogen sulfide's rotten egg.",
+    "sulfur_engineer": "The engineer sorts sulfur aromas by identity, source, timing, volatility, yeast health, and boil performance before proposing a remedy.",
+    "cellar_manager": "Gravity curves, temperature traces, pitch records, and sensory notes let the manager distinguish slow fermentation from a truly stalled batch.",
+    "maturation_operator": "The operator schedules warm cleanup before cooling so metabolically active yeast can reduce diacetyl and other intermediates.",
+    "cold_keeper": "The keeper lowers temperature only after fermentation and cleanup goals are met, promoting settling and lager maturation.",
+    "hop_breeder": "The breeder crosses selected plants for resin and oil profiles, disease resistance, yield, and adaptation while propagating desired females clonally.",
+    "hop_grower": "The grower trains clockwise-climbing bines and inspects papery female cones for maturity and damage.",
+    "lupulin_keeper": "Yellow resinous glands at the base of cone bracts hold alpha acids, beta acids, and concentrated essential oils.",
+    "humulone": "The principal hop alpha acid displays an acylphloroglucinol framework poised to rearrange under kettle heat.",
+    "isomerization_chemist": "Structural diagrams trace humulone's heat-driven rearrangement into more soluble cis- and trans-iso-alpha-acid products.",
+    "myrcene": "This volatile terpene hydrocarbon contributes fresh hop aroma but readily escapes with steam during a long boil.",
+    "ibu_chemist": "The chemist extracts bitter compounds and reads absorbance near 275 nm, while noting that the result does not equal perceived bitterness.",
+    "dry_hopper": "The brewer adds hops after the kettle, protecting many volatiles while monitoring oxygen pickup, extraction, and possible hop creep.",
+    "light_tester": "A shielded chamber exposes matched beer samples to controlled wavelengths so lightstruck chemistry can be separated from oxidation.",
+    "riboflavin": "The yellow flavin absorbs visible light and enters an excited state capable of initiating hop-derived sulfur photochemistry.",
+    "mbt_molecule": "3-methyl-2-butene-1-thiol is a potent sulfur odorant whose skunky aroma is detectable at extraordinarily low concentration.",
+    "brite_operator": "The operator confirms clarity, temperature, carbonation readiness, and dissolved oxygen before releasing beer to packaging.",
+    "carbonation_operator": "A pressure-temperature chart guides CO2 dissolution; cold beer reaches a higher dissolved concentration at the same pressure.",
+    "bottle_conditioner": "A small viable yeast population consumes measured priming sugar in the sealed bottle, trapping fermentation CO2.",
+    "can_specialist": "The specialist measures seam overlap, oxygen pickup, fill height, and lid integrity on an opaque light-blocking package.",
+    "nitrogen_operator": "A restrictor plate shears low-solubility nitrogen from solution into many fine bubbles that build a dense creamy head.",
+    "ltp1": "Barley lipid-transfer protein 1 survives brewing in modified forms that can migrate to bubble surfaces and support foam.",
+    "protein_z": "This heat-stable barley serpin persists into beer and contributes to the protein network associated with foam stability.",
+    "sensory_analyst": "Identically coded glasses, randomized serving order, and aroma references help the analyst separate observation from expectation.",
+    "style_judge": "The judge links sensory traits to ingredients, yeast strain, fermentation temperature, attenuation, maturation, and serving practice.",
+    "taproom_manager": "The manager compares beer temperature, gas pressure, faucet condition, glass cleanliness, and foam behavior before blaming the recipe.",
+    "glass_steward": "Under angled light, the steward finds grease and detergent films that disrupt the protein-stabilized walls between bubbles.",
+    "cold_storekeeper": "A continuous temperature logger reveals every warm excursion that could accelerate packaged-beer staling.",
+    "packaging_lead": "The lead tracks dissolved oxygen, total package oxygen, seam or closure integrity, fill level, light exposure, and sanitation together.",
+    "microbiologist": "The microbiologist compares colony morphology, microscopy, acid production, and carbohydrate use to identify brewery isolates.",
+    "lactic_bacterium": "A small Gram-positive cell converts carbohydrate to lactic acid but faces inhibition from hop iso-alpha acids in many beers.",
+    "wild_yeast": "The isolate carries metabolic capabilities absent from the production strain and may continue consuming residual carbohydrate in package.",
+    "sanitation_lead": "The lead opens a transfer fitting to expose hidden soil, demonstrating why sanitizer cannot compensate for inadequate cleaning.",
+    "qa_chemist": "Control charts and instrument logs let the chemist ask whether a surprising number reflects the beer, the sample, the method, or transcription.",
+    "yeast_banker": "Barcoded cryovials preserve authenticated master cultures so production does not depend on endless repitching and accumulated drift.",
+    "pilot_brewer": "A small instrumented brewhouse reproduces production variables while limiting the cost of a failed trial.",
+    "instructor": "The instructor annotates a batch record with links among raw materials, time, temperature, pH, gravity, cell health, and sensory outcome.",
+}
+
+
+_npc_home = {npc: room for room, residents in PLACEMENTS.items() for npc in residents}
+_room_fact = {room: fact for room, _name, _feature, fact in ROOM_DATA}
+
+
+def npc_dialogue(key: str, name: str) -> str:
+    return f'“{_room_fact[_npc_home[key]].rstrip(".")},” says {name}.'
+
+
 NPCS = {
     key: NPC(key, name, aliases(key, name),
-             f"{name} is occupied with the chemistry and operations of this part of the brewery.",
-             f'“Look closely at this station,” says {name}. “Its details affect everything downstream.”')
+             NPC_DESCRIPTIONS[key],
+             npc_dialogue(key, name))
     for key, name in NAMES.items()
 }
 

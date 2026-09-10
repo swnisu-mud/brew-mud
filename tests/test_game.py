@@ -11,7 +11,7 @@ from brewmud.quests import QUESTS
 from brewmud.quizzes import QUIZZES
 from brewmud.regional_maps import REGIONAL_MAPS, ROOM_REGION
 from brewmud.server import MUDServer
-from brewmud.world import NPCS, ROOMS
+from brewmud.world import NPC_DESCRIPTIONS, NPCS, ROOMS
 
 
 def npc_room(npc: str) -> str:
@@ -53,6 +53,12 @@ class WorldTests(unittest.TestCase):
             for target in targets:
                 self.assertIn(target, NPCS)
                 self.assertIn(target, placed)
+
+    def test_every_npc_has_a_specific_educational_description(self):
+        self.assertEqual(set(NPCS), set(NPC_DESCRIPTIONS))
+        for key, npc in NPCS.items():
+            self.assertNotIn("occupied with", npc.description, key)
+            self.assertGreater(len(npc.description), 60, key)
 
     def test_each_quest_can_be_played_to_completion(self):
         for key, quest in QUESTS.items():

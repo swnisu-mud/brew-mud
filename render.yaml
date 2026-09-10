@@ -4,5 +4,5 @@ services:
     runtime: python
     plan: free
     buildCommand: pip install -e .
-    startCommand: python -m brewmud.web
+    startCommand: python -m brewmud.web --host 0.0.0.0
     healthCheckPath: /api/status

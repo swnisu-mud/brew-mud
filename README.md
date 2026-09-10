@@ -102,6 +102,8 @@ GitHub stores the code; hosting the running multiplayer application is a separat
 3. Accept the detected `render.yaml` configuration and deploy.
 4. Open the generated `https://...onrender.com` address.
 
+The Render start command is `python -m brewmud.web --host 0.0.0.0`. The public bind address is required by Render; local runs remain bound to `127.0.0.1` by default.
+
 The Blueprint initially selects Render's free compute plan. Free services sleep after inactivity, so the first visitor may wait while the service wakes. Before classroom use, the service can be upgraded from its **Compute** page to the smallest paid plan without changing BrewMUD's code.
 
 At this prototype stage, player sessions and progression live in server memory. A restart or redeploy disconnects current players and resets their server-side sessions. Durable accounts, a database, instructor controls, and moderation should be added before using the game for graded work.

@@ -14,6 +14,10 @@ from .server import MUDServer
 STATIC_DIR = Path(__file__).with_name("static")
 
 
+def default_bind_host() -> str:
+    return os.environ.get("HOST", "0.0.0.0" if "PORT" in os.environ else "127.0.0.1")
+
+
 class BrewMUDHTTPServer(ThreadingHTTPServer):
     daemon_threads = True
 
@@ -24,6 +28,20 @@ class BrewMUDHTTPServer(ThreadingHTTPServer):
 
 class RequestHandler(BaseHTTPRequestHandler):
     server: BrewMUDHTTPServer
+
+    def do_HEAD(self) -> None:
+        """Answer platform availability probes without sending a response body."""
+        parsed = urlparse(self.path)
+        if parsed.path in {"/", "/api/status"}:
+            self.send_response(HTTPStatus.OK)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", "0")
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            return
+        self.send_response(HTTPStatus.NOT_FOUND)
+        self.send_header("Content-Length", "0")
+        self.end_headers()
 
     def do_GET(self) -> None:
         parsed = urlparse(self.path)
@@ -118,7 +136,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run the BrewMUD multiplayer web server")
-    parser.add_argument("--host", default=os.environ.get("HOST", "127.0.0.1"),
+    parser.add_argument("--host", default=default_bind_host(),
                         help="Address to bind (default: localhost only)")
     parser.add_argument("--port", default=int(os.environ.get("PORT", "8000")), type=int,
                         help="Port to bind (default: 8000, or the PORT environment variable)")

@@ -5,6 +5,7 @@ import random
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from brewmud.game import Game
 from brewmud.quests import QUESTS
@@ -204,8 +205,15 @@ class AssetTests(unittest.TestCase):
     def test_render_blueprint_uses_web_service_and_health_check(self):
         blueprint = (Path(__file__).parents[1] / "render.yaml").read_text()
         self.assertIn("type: web", blueprint)
-        self.assertIn("python -m brewmud.web", blueprint)
+        self.assertIn("python -m brewmud.web --host 0.0.0.0", blueprint)
         self.assertIn("healthCheckPath: /api/status", blueprint)
+
+    def test_render_port_environment_selects_public_bind_default(self):
+        from brewmud import web
+        with patch.dict("os.environ", {"PORT": "10000"}, clear=True):
+            self.assertEqual(web.default_bind_host(), "0.0.0.0")
+        with patch.dict("os.environ", {}, clear=True):
+            self.assertEqual(web.default_bind_host(), "127.0.0.1")
 
 
 if __name__ == "__main__":

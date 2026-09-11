@@ -49,7 +49,7 @@ map
 
 ## Commands
 
-`LOOK`, `TALK`, compass directions or `GO`, `JOURNAL`, `HINT`, `MAP`, `NOTES`, `STATUS`, `QUIZ`, `PAUSE`, `A`–`D`, and `QUIT` work in solo and browser play. Browser sessions also add local `SAY` and `WHO`; account progress saves automatically. Following and private group chat are retained internally as an experimental mode but disabled in the student study-guide version. The solo terminal additionally supports file-based `SAVE` and `LOAD`.
+`LOOK`, `TALK`, compass directions or `GO`, `JOURNAL`, `HINT`, `MAP`, `NOTES`, `STATUS`, `QUIZ`, `PAUSE`, `A`–`D`, and `QUIT` work in solo and browser play. Browser sessions also add local `SAY`, `WHO`, and a two-step `RESTART` command for resetting personal progress; account progress saves automatically. Following and private group chat are retained internally as an experimental mode but disabled in the student study-guide version. The solo terminal additionally supports file-based `SAVE` and `LOAD`.
 
 Quest NPCs announce problems in first-arrival dialogue. The assignments unlock sequentially, and each player can have only one active quest. `JOURNAL` records the current assignment and next available lead; `HINT` calculates a shortest route to the objective.
 

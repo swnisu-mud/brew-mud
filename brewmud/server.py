@@ -88,6 +88,8 @@ class MUDServer:
             verb, _, argument = command.partition(" ")
             if verb.casefold() in {"save", "load"}:
                 return "Browser progress saves automatically to your account after every game command."
+            if verb.casefold() == "restart":
+                return self._restart_progress(token, argument)
             if verb.lower() in {"say", "chat"}:
                 return self._say(token, argument)
             if verb.lower() in {"group", "party"}:
@@ -109,6 +111,7 @@ class MUDServer:
                     session.game.help()
                     + "\n  SAY <message>       Speak to players in your room"
                     + "\n  WHO                 List nearby and online players"
+                    + "\n  RESTART             Start the two-step personal progress reset"
                 )
                 if self.following_enabled:
                     response += (
@@ -176,6 +179,32 @@ class MUDServer:
         room = session.game.state.room
         self._broadcast(room, f'{session.name} says, “{message}”', exclude=token)
         return f'You say, “{message}”'
+
+    def _restart_progress(self, token: str, confirmation: str) -> str:
+        session = self._require(token)
+        if confirmation.strip().casefold() != "confirm":
+            return (
+                "RESTART WARNING — This will permanently erase your quests, quizzes, "
+                "Insight, exploration, inventory, and current location. Your account name "
+                "and password will remain.\nType RESTART CONFIRM to start over."
+            )
+
+        old_room = session.game.state.room
+        if self.following_enabled:
+            self._end_follow_relationships(token)
+            session.following = None
+        session.game = Game()
+        new_room = session.game.state.room
+        if old_room != new_room:
+            self._broadcast(old_room, f"{session.name} departs.", exclude=token)
+            self._broadcast(new_room, f"{session.name} arrives.", exclude=token)
+        output = (
+            "PROGRESS RESET — Your account has returned to the beginning.\n\n"
+            + session.game.introduction()
+            + self._occupants_text(token)
+        )
+        self._save_session(session)
+        return output
 
     def _group_say(self, token: str, message: str) -> str:
         session = self._require(token)

@@ -339,6 +339,28 @@ class MultiplayerTests(unittest.TestCase):
         self.assertIn("saves automatically", server.command(token, "save ../../unsafe.json"))
         self.assertIn("saves automatically", server.command(token, "load ../../unsafe.json"))
 
+    def test_restart_requires_confirmation_and_resets_only_progress(self):
+        server = MUDServer(":memory:")
+        self.addCleanup(server.close)
+        token, _ = server.register("Alice", "barley-123")
+        server.command(token, "talk coordinator")
+        server.command(token, "north")
+        old_insight = server._players[token].game.state.insight
+
+        warning = server.command(token, "restart")
+        self.assertIn("RESTART CONFIRM", warning)
+        self.assertEqual(server._players[token].game.state.insight, old_insight)
+
+        reset = server.command(token, "RESTART CONFIRM")
+        self.assertIn("PROGRESS RESET", reset)
+        self.assertEqual(server._players[token].game.state.quest_stages, {})
+        self.assertEqual(server._players[token].game.state.completed_quizzes, set())
+        self.assertEqual(server._players[token].game.state.room, "brewery_gate")
+        server.logout(token)
+        restored, _ = server.login("Alice", "barley-123")
+        self.assertEqual(server._players[restored].game.state.quest_stages, {})
+        self.assertEqual(server._players[restored].game.state.room, "brewery_gate")
+
 
 class AccountStoreTests(unittest.TestCase):
     def test_passwords_are_hashed_and_state_is_serialized(self):

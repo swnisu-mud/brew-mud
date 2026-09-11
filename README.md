@@ -111,6 +111,18 @@ The Render start command is `python -m brewmud.web --host 0.0.0.0`. The public b
 
 The Blueprint selects Render's smallest paid compute plan and attaches a 1 GB persistent disk at `/var/data`. Browser accounts are stored in `/var/data/brewmud.db` so they survive service restarts and deployments.
 
+### Preserve accounts on an existing Render service
+
+If the service was created manually with **New Web Service**, the `render.yaml` file does not automatically attach its disk. Configure the existing service once before giving the address to students:
+
+1. Open the `brew-mud` service in the Render Dashboard.
+2. Open **Environment**, add `BREWMUD_DB_PATH` with the value `/var/data/brewmud.db`, and choose **Save only**.
+3. Open **Disks**, choose **Add Disk**, use the name `brewmud-data`, mount it at `/var/data`, and select the smallest available size (1 GB is ample for this application).
+4. Adding the disk triggers a deployment. After it is live, open `/api/status` on the site and confirm that it reports `"account_storage": "persistent"`.
+5. Create a test account, make a small GitHub push, and confirm that the same account can still log in after the automatic deployment.
+
+Render files outside the disk mount are temporary and are replaced at every deployment. BrewMUD therefore refuses to start on Render unless `BREWMUD_DB_PATH` is inside a disk actually mounted at `/var/data`; this prevents a misconfigured public service from silently accepting disposable accounts. Attaching the disk cannot recover accounts already lost from the temporary filesystem, so perform this setup before student accounts are created.
+
 ### Instructor progress
 
 Set `BREWMUD_ADMIN_PASSWORD` to a strong, unique value in the Render service's **Environment** page. Then visit `/instructor` on the deployed BrewMUD site and enter that password. The read-only dashboard shows each account's rank, Insight, locations explored, quests completed, knowledge checks completed, next rank, and last activity. It refreshes every 30 seconds while open. Students should report their player-chosen account names if the dashboard will be used for extra credit.

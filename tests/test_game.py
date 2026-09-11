@@ -552,6 +552,37 @@ class AssetTests(unittest.TestCase):
         with patch.dict("os.environ", {}, clear=True):
             self.assertEqual(web.default_bind_host(), "127.0.0.1")
 
+    def test_local_database_path_defaults_to_project_file(self):
+        from brewmud import web
+        with patch.dict("os.environ", {}, clear=True):
+            self.assertEqual(web.account_database_path(), "brewmud.db")
+
+    def test_render_requires_configured_mounted_persistent_storage(self):
+        from brewmud import web
+        with patch.dict("os.environ", {"RENDER": "true"}, clear=True):
+            with self.assertRaisesRegex(RuntimeError, "attach a disk"):
+                web.account_database_path()
+        with patch.dict(
+            "os.environ",
+            {"RENDER": "true", "BREWMUD_DB_PATH": "brewmud.db"},
+            clear=True,
+        ):
+            with self.assertRaisesRegex(RuntimeError, "must be inside"):
+                web.account_database_path()
+        with patch.dict(
+            "os.environ",
+            {"RENDER": "true", "BREWMUD_DB_PATH": "/var/data/brewmud.db"},
+            clear=True,
+        ), patch.object(Path, "is_mount", return_value=False):
+            with self.assertRaisesRegex(RuntimeError, "no persistent disk"):
+                web.account_database_path()
+        with patch.dict(
+            "os.environ",
+            {"RENDER": "true", "BREWMUD_DB_PATH": "/var/data/brewmud.db"},
+            clear=True,
+        ), patch.object(Path, "is_mount", return_value=True):
+            self.assertEqual(web.account_database_path(), "/var/data/brewmud.db")
+
     def test_instructor_password_requires_a_configured_exact_match(self):
         from brewmud.web import instructor_password_matches
         self.assertTrue(instructor_password_matches("secret phrase", "secret phrase"))

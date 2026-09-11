@@ -13,10 +13,40 @@ from .server import MUDServer
 
 
 STATIC_DIR = Path(__file__).with_name("static")
+RENDER_DATA_DIR = Path("/var/data")
 
 
 def default_bind_host() -> str:
     return os.environ.get("HOST", "0.0.0.0" if "PORT" in os.environ else "127.0.0.1")
+
+
+def account_database_path() -> str:
+    """Choose account storage and reject ephemeral Render configurations."""
+    configured = os.environ.get("BREWMUD_DB_PATH")
+    if os.environ.get("RENDER", "").casefold() != "true":
+        return configured or "brewmud.db"
+
+    if not configured:
+        raise RuntimeError(
+            "Persistent account storage is not configured. In Render, attach a disk "
+            "at /var/data and set BREWMUD_DB_PATH=/var/data/brewmud.db."
+        )
+
+    database = Path(configured).expanduser().resolve()
+    try:
+        database.relative_to(RENDER_DATA_DIR)
+    except ValueError as exc:
+        raise RuntimeError(
+            "BREWMUD_DB_PATH must be inside Render's persistent /var/data disk "
+            "(recommended: /var/data/brewmud.db)."
+        ) from exc
+
+    if not RENDER_DATA_DIR.is_mount():
+        raise RuntimeError(
+            "BREWMUD_DB_PATH points to /var/data, but no persistent disk is mounted "
+            "there. Add the disk on the Render service's Disks page before accepting accounts."
+        )
+    return str(database)
 
 
 def instructor_password_matches(provided: str, configured: str) -> bool:
@@ -27,8 +57,11 @@ class BrewMUDHTTPServer(ThreadingHTTPServer):
     daemon_threads = True
 
     def __init__(self, server_address, handler_class=BaseHTTPRequestHandler):
+        database_path = account_database_path()
         super().__init__(server_address, handler_class)
-        self.world = MUDServer(os.environ.get("BREWMUD_DB_PATH", "brewmud.db"))
+        self.database_path = database_path
+        self.storage_mode = "persistent" if os.environ.get("RENDER", "").casefold() == "true" else "local"
+        self.world = MUDServer(self.database_path)
         self.instructor_password = os.environ.get("BREWMUD_ADMIN_PASSWORD", "")
 
     def server_close(self) -> None:
@@ -81,7 +114,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                 self._json({"error": str(exc)}, HTTPStatus.UNAUTHORIZED)
             return
         if parsed.path == "/api/status":
-            self._json({"players": self.server.world.player_count()})
+            self._json({"players": self.server.world.player_count(),
+                        "account_storage": self.server.storage_mode})
             return
         self._json({"error": "Not found"}, HTTPStatus.NOT_FOUND)
 
@@ -192,6 +226,7 @@ def main() -> None:
     args = parser.parse_args()
     server = BrewMUDHTTPServer((args.host, args.port), RequestHandler)
     print(f"BrewMUD is running at http://{args.host}:{args.port}")
+    print(f"Account storage: {server.storage_mode} ({server.database_path})")
     print("Press Ctrl-C to stop.")
     try:
         server.serve_forever()

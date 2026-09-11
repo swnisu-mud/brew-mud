@@ -31,11 +31,11 @@ class RegionalMap:
 REGIONAL_MAPS = {
  "malt": RegionalMap("MALTINGS", ((('GRN','grain_receiving'),('BAR','barley_lab'),('STP','steep_house'),('AIR','air_rest'),('GER','germination_floor')),
                                       (('GAT','brewery_gate'),('CUR','cure_floor'),('KLN','kiln'),('END','endosperm'),('ALE','aleurone'))),
-                     "GER leads DOWN to the Water Laboratory; GAT leads IN from the Shipping Dock."),
+                     "GER leads DOWN to the Water Laboratory; GAT leads IN to the Shipping Dock."),
  "mash": RegionalMap("WATER AND MASH", ((('WAT','water_lab'),('PHB','ph_bench'),('ION','ion_gallery'),('CTY','city_profiles')),
                                             (('TRT','treatment_bay'),('MIL','mill_room'),('MSH','mash_tun'),('PRO','protein_rest')),
                                             (('BET','beta_rest'),('ALP','alpha_rest'),('CNV','conversion_bench'),('OUT','mash_out'))),
-                     "WAT leads UP to Germination; MSH leads IN to the Carbohydrate Lab; PRO leads IN to the Protein and Enzyme Lab; BET and ALP lead IN from the Enzyme Lab; CNV leads IN to the Gelatinization Chamber; OUT leads DOWN to the Lauter Tun."),
+                     "WAT leads UP to Germination; MSH leads IN to the Carbohydrate Lab; PRO, BET, and ALP lead IN to the Protein and Enzyme Lab; CNV leads IN to the Gelatinization Chamber; OUT leads DOWN to the Lauter Tun."),
  "starch": RegionalMap("CARBOHYDRATE AND STARCH LAB",
                        ((('CAR','carbohydrate_lab'),('GLU','glucose_bench'),('DIS','disaccharide_gallery'),('POL','polymer_comparison')),
                        (('GEL','gelatinization_chamber'),('CRY','crystallinity_lab'),('AMY','amylose_helix'),('AMP','amylopectin_arbor'))),

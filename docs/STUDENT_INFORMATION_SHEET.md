@@ -64,6 +64,128 @@ L GLUC
 
 These work for the Training Coordinator, Carbohydrate Curator, and Glucose. If an abbreviation could mean more than one thing, type a few more letters.
 
+<!-- PAGE BREAK -->
+
+## Regional map reference
+
+In each diagram, rooms joined by `---` connect east and west, while vertically aligned rooms joined by `|` connect north and south. The diagrams show connections, while the room's **Exits** line remains the authority for the directions you can use. Type `MAP` in the game to display your current region, or `MAP name`—for example, `MAP ENZYME`—to display another region.
+
+These maps are optional orientation aids. If a diagram is difficult to see or interpret, use `HINT` for a written route to your current objective. The code legends and regional transitions below also state every location and cross-region connection in text.
+
+### Maltings (`MAP MALT`)
+
+```text
+[GRN]---[BAR]---[STP]---[AIR]---[GER]
+  |       |       |       |       |
+[GAT]---[CUR]---[KLN]---[END]---[ALE]
+```
+
+Codes: GRN—Grain Receiving; BAR—Two-Row Barley Laboratory; STP—Steep House; AIR—Steep Air Rest; GER—Germination Floor; GAT—Brewery Gate; CUR—Malt Curing Floor; KLN—Malt Kiln; END—Starchy Endosperm; ALE—Aleurone Workshop.
+
+Regional transitions: Germination Floor leads **DOWN** to the Brewing Water Laboratory. Brewery Gate leads **IN** to the Packaging and Shipping Dock.
+
+### Water and mash chemistry (`MAP MASH`)
+
+```text
+[WAT]---[PHB]---[ION]---[CTY]
+  |       |       |       |
+[TRT]---[MIL]---[MSH]---[PRO]
+  |       |       |       |
+[BET]---[ALP]---[CNV]---[OUT]
+```
+
+Codes: WAT—Brewing Water Laboratory; PHB—pH Bench; ION—Ion Gallery; CTY—Historic Water Profiles; TRT—Water Treatment Bay; MIL—Malt Mill; MSH—Mash Tun; PRO—Protein Rest; BET—Beta-Amylase Rest; ALP—Alpha-Amylase Rest; CNV—Starch Conversion Bench; OUT—Mash-Out Platform.
+
+Regional transitions: Water Laboratory leads **UP** to Germination Floor. Mash Tun leads **IN** to the Carbohydrate and Starch Lab. Protein Rest, Beta-Amylase Rest, and Alpha-Amylase Rest each lead **IN** to the Protein and Enzyme Lab. Starch Conversion Bench leads **IN** to the Gelatinization Chamber. Mash-Out leads **DOWN** to the Lauter Tun.
+
+### Carbohydrate and starch lab (`MAP STARCH`)
+
+```text
+[CAR]---[GLU]---[DIS]---[POL]
+  |       |       |       |
+[GEL]---[CRY]---[AMY]---[AMP]
+```
+
+Codes: CAR—Carbohydrate and Starch Laboratory; GLU—Glucose Bench; DIS—Disaccharide Gallery; POL—Glucose-Polymer Comparison Hall; GEL—Gelatinization Chamber; CRY—Starch Crystallinity Laboratory; AMY—Amylose Helix Walk; AMP—Amylopectin Branching Arbor.
+
+Regional transitions: Carbohydrate Laboratory leads **OUT** to the Mash Tun. Gelatinization Chamber leads **OUT** to the Starch Conversion Bench.
+
+<!-- PAGE BREAK -->
+
+### Protein and enzyme lab (`MAP ENZYME`)
+
+```text
+[AAG]---[PEP]---[STR]---[FOL]---[DEN]---[CAT]
+  |       |       |       |       |       |
+[ACT]---[OPT]---[AMZ]---[THK]---[AUX]---[IOD]
+```
+
+Codes: AAG—Amino Acid Gallery; PEP—Peptide Bond Bench; STR—Protein Structure Gallery; FOL—Protein Folding Chamber; DEN—Denaturation and Aggregation Bay; CAT—Enzyme Catalysis Laboratory; ACT—Active-Site Workshop; OPT—Enzyme Conditions Laboratory; AMZ—Amylase Mechanism Laboratory; THK—Mash-Thickness Control Station; AUX—Accessory Enzyme Laboratory; IOD—Starch–Iodine Test Alcove.
+
+Regional transitions: Amino Acid Gallery leads **OUT** to the Protein Rest. Amylase Mechanism Laboratory leads **OUT** to the Beta-Amylase Rest. Starch–Iodine Test Alcove leads **OUT** to the Alpha-Amylase Rest.
+
+### Brewhouse (`MAP BREW`)
+
+```text
+[LAU]---[BED]---[SPA]---[GRA]---[KET]
+  |       |       |       |       |
+[BRK]---[HOP]---[WHL]---[HEX]---[OXY]
+```
+
+Codes: LAU—Lauter Tun; BED—Grain-Bed Gallery; SPA—Sparge Arm; GRA—Wort Grant; KET—Copper Kettle; BRK—Hot-Break Deck; HOP—Hop-Dosing Balcony; WHL—Whirlpool; HEX—Wort Heat Exchanger; OXY—Wort Oxygenation Station.
+
+Regional transitions: Lauter Tun leads **UP** to Mash-Out. Hop-Dosing Balcony leads **IN** to the Hop Lab. Wort Oxygenation Station leads **DOWN** to the Fermentation Cellar.
+
+### Fermentation cellar (`MAP FERMENT`)
+
+```text
+[PIT]---[ALE]---[LAG]---[YLB]---[MEM]---[MGP]---[MLT]
+  |       |       |       |       |       |       |
+[GLY]---[NAD]---[LIP]---[EST]---[DIA]---[SUL]---[MAT]
+```
+
+Codes: PIT—Yeast Pitching Deck; ALE—Ale Fermenter; LAG—Lager Fermenter; YLB—Yeast Culture Laboratory; MEM—Yeast Membrane Walk; MGP—Maltose Transport Gate; MLT—Maltase Bench; GLY—Glycolysis Lane; NAD—NAD+ Recycling Junction; LIP—Sterol and Lipid Workshop; EST—Ester Laboratory; DIA—Diacetyl Rest; SUL—Sulfur Vent; MAT—Maturation Cellar.
+
+Regional transitions: Pitching Deck leads **UP** to Wort Oxygenation. Yeast Laboratory leads **IN** to Microbiology. Maturation Cellar leads **DOWN** to Packaging.
+
+<!-- PAGE BREAK -->
+
+### Hop yard and flavor lab (`MAP HOPS`)
+
+```text
+[YRD]---[CON]---[LUP]---[AAC]
+  |       |       |       |
+[OIL]---[IBU]---[DRY]---[LGT]
+```
+
+Codes: YRD—Hop Yard; CON—Female Cone Arbor; LUP—Lupulin Gland; AAC—Alpha-Acid Bench; OIL—Hop Essential-Oil Lab; IBU—IBU Spectrophotometer; DRY—Dry-Hop Gallery; LGT—Lightstrike Booth.
+
+Regional transition: Alpha-Acid Bench leads **OUT** to the Brewhouse Hop-Dosing Balcony.
+
+### Packaging and sensory (`MAP PACK`)
+
+```text
+[BRT]---[CO2]---[BOT]---[CAN]---[NIT]
+  |       |       |       |       |
+[FOM]---[SNS]---[STY]---[CLD]---[SHP]
+```
+
+Codes: BRT—Brite Beer Tank; CO2—Carbonation Station; BOT—Bottle-Conditioning Line; CAN—Canning Line; NIT—Nitrogen Service Tap; FOM—Beer Foam Laboratory; SNS—Sensory Evaluation Room; STY—Style Taproom; CLD—Cold Storage; SHP—Packaging and Shipping Dock.
+
+Regional transitions: Brite Tank leads **UP** to Maturation. Style Taproom leads **DOWN** to Quality Assurance. Shipping Dock leads **OUT** to Brewery Gate.
+
+### Quality and training (`MAP QUALITY`)
+
+```text
+[MIC]---[SAN]---[QAC]
+  |       |       |
+[BNK]---[PIL]---[CLS]
+```
+
+Codes: MIC—Brewery Microbiology Lab; SAN—Cleaning and Sanitation Bay; QAC—Analytical Chemistry Lab; BNK—Production Yeast Bank; PIL—Pilot Brewery; CLS—Brewery Training Classroom.
+
+Regional transitions: Microbiology Laboratory leads **OUT** to the Yeast Laboratory. Quality Chemistry Laboratory leads **UP** to the Style Taproom.
+
 ## How quests work
 
 The quests form a sequence through malting, water chemistry, carbohydrate and starch structure, protein structure, enzyme and amylase behavior, mashing, and lautering. You may explore anywhere, but you can have only one active quest at a time, and later quests unlock after earlier ones are completed.

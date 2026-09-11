@@ -238,6 +238,12 @@ class DocumentBuilder:
         self.ordered_list_ids.append(list_id)
         return list_id
 
+    def page_break(self) -> None:
+        paragraph = ET.SubElement(self.body, w("p"))
+        run = ET.SubElement(paragraph, w("r"))
+        page_break = ET.SubElement(run, w("br"))
+        page_break.set(w("type"), "page")
+
     def finish(self) -> None:
         section = ET.SubElement(self.body, w("sectPr"))
         size = ET.SubElement(section, w("pgSz"))
@@ -273,11 +279,19 @@ def markdown_to_document(markdown: str) -> DocumentBuilder:
             ordered_list = None
             index += 1
             continue
+        if line.strip() == "<!-- PAGE BREAK -->":
+            builder.page_break()
+            ordered_list = None
+            index += 1
+            continue
         if line.startswith("# "):
             builder.paragraph(line[2:], style="Heading1")
             ordered_list = None
         elif line.startswith("## "):
             builder.paragraph(line[3:], style="Heading2")
+            ordered_list = None
+        elif line.startswith("### "):
+            builder.paragraph(line[4:], style="Heading3")
             ordered_list = None
         elif (
             line.startswith("|")
@@ -320,6 +334,7 @@ def styles_xml() -> bytes:
   <w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style>
   <w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:uiPriority w:val="9"/><w:qFormat/><w:pPr><w:keepNext/><w:keepLines/><w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="0"/></w:pPr><w:rPr><w:rFonts w:ascii="Aptos Display" w:hAnsi="Aptos Display"/><w:b/><w:color w:val="7C2529"/><w:sz w:val="36"/></w:rPr></w:style>
   <w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:uiPriority w:val="9"/><w:qFormat/><w:pPr><w:keepNext/><w:keepLines/><w:spacing w:before="200" w:after="80"/><w:outlineLvl w:val="1"/></w:pPr><w:rPr><w:rFonts w:ascii="Aptos Display" w:hAnsi="Aptos Display"/><w:b/><w:color w:val="7C2529"/><w:sz w:val="28"/></w:rPr></w:style>
+  <w:style w:type="paragraph" w:styleId="Heading3"><w:name w:val="heading 3"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:uiPriority w:val="9"/><w:qFormat/><w:pPr><w:keepNext/><w:keepLines/><w:spacing w:before="140" w:after="40"/><w:outlineLvl w:val="2"/></w:pPr><w:rPr><w:rFonts w:ascii="Aptos Display" w:hAnsi="Aptos Display"/><w:b/><w:color w:val="7C2529"/><w:sz w:val="24"/></w:rPr></w:style>
   <w:style w:type="paragraph" w:styleId="ListParagraph"><w:name w:val="List Paragraph"/><w:basedOn w:val="Normal"/><w:pPr><w:ind w:left="540" w:hanging="270"/><w:contextualSpacing/></w:pPr></w:style>
   <w:style w:type="paragraph" w:styleId="CodeBlock"><w:name w:val="Code Block"/><w:basedOn w:val="Normal"/><w:pPr><w:ind w:left="360"/><w:spacing w:after="0"/></w:pPr><w:rPr><w:rFonts w:ascii="Consolas" w:hAnsi="Consolas"/><w:sz w:val="20"/></w:rPr></w:style>
   <w:style w:type="character" w:styleId="Hyperlink"><w:name w:val="Hyperlink"/><w:basedOn w:val="DefaultParagraphFont"/><w:uiPriority w:val="99"/><w:unhideWhenUsed/><w:rPr><w:color w:val="0563C1"/><w:u w:val="single"/></w:rPr></w:style>

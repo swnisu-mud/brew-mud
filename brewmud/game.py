@@ -10,7 +10,7 @@ from pathlib import Path
 from .models import GameState
 from .quests import GIVER_QUESTS, QUESTS
 from .quizzes import QUIZZES
-from .regional_maps import render_map
+from .regional_maps import compact_map_data, render_map
 from .world import AMBIENT_SPEECH, DIRECTION_ALIASES, FACTS, ITEMS, NPCS, ROOMS
 
 
@@ -334,6 +334,40 @@ class Game:
                 f"Quests: {data['quests']}/{data['quests_total']}\n"
                 f"Knowledge checks: {data['knowledge_checks']}/{data['knowledge_checks_total']}\n"
                 f"{next_text}")
+
+    def side_panel_data(self) -> dict[str, object]:
+        """Return compact quest and location context for the browser UI."""
+        if self.state.quest_stages:
+            key, stage = next(iter(self.state.quest_stages.items()))
+            quest = QUESTS[key]
+            quest_data = {
+                "status": "Active quest",
+                "title": quest.title,
+                "description": quest.lead,
+                "objective": quest.steps[stage].objective,
+            }
+        else:
+            quest = self._next_available_quest()
+            if quest:
+                giver_room = next(r.key for r in ROOMS.values() if quest.giver in r.npcs)
+                quest_data = {
+                    "status": "Next quest",
+                    "title": quest.title,
+                    "description": quest.lead,
+                    "objective": f"Find {NPCS[quest.giver].name} at {ROOMS[giver_room].name}.",
+                }
+            else:
+                quest_data = {
+                    "status": "Assignments complete",
+                    "title": "Brewery investigations complete",
+                    "description": "You have completed every current brewery quest.",
+                    "objective": "Continue exploring and completing knowledge checks.",
+                }
+
+        # Do not let the persistent map reveal a destination while a pop quiz
+        # is intentionally withholding that room's description.
+        map_data = None if self.state.pending_room_description is not None else compact_map_data(self.state.room)
+        return {"quest": quest_data, "map": map_data}
 
     def quiz(self) -> str:
         key = self.state.active_quiz

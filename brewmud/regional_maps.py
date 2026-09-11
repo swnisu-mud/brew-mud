@@ -83,3 +83,19 @@ def render_map(current: str, requested: str = "") -> str:
     if query in {"all","regions","list","help"}: return map_index()
     region = ALIASES.get(query) if query else ROOM_REGION[current]
     return REGIONAL_MAPS[region].render(current) if region else f"Unknown map region: {requested}.\n\n{map_index()}"
+
+
+def compact_map_data(current: str) -> dict[str, object]:
+    """Return a structured regional map suitable for the browser side panel."""
+    region = REGIONAL_MAPS[ROOM_REGION[current]]
+    return {
+        "title": region.title,
+        "current_name": ROOMS[current].name,
+        "rows": [
+            [
+                {"code": code, "name": ROOMS[room].name, "current": room == current}
+                for code, room in row
+            ]
+            for row in region.rows
+        ],
+    }

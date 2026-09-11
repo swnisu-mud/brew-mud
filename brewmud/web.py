@@ -133,7 +133,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                 )
                 self._json({"token": token, "output": output, "show_instructions": False,
                             "awaiting_continue": self.server.world.awaiting_continue(token),
-                            "progress": self.server.world.player_progression(token)})
+                            "progress": self.server.world.player_progression(token),
+                            "side_panel": self.server.world.player_side_panel(token)})
             except ValueError as exc:
                 self._json({"error": str(exc)}, HTTPStatus.BAD_REQUEST)
             return
@@ -144,7 +145,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                 )
                 self._json({"token": token, "output": output, "show_instructions": True,
                             "awaiting_continue": self.server.world.awaiting_continue(token),
-                            "progress": self.server.world.player_progression(token)},
+                            "progress": self.server.world.player_progression(token),
+                            "side_panel": self.server.world.player_side_panel(token)},
                            HTTPStatus.CREATED)
             except ValueError as exc:
                 self._json({"error": str(exc)}, HTTPStatus.BAD_REQUEST)
@@ -155,7 +157,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                 token = str(body.get("token", ""))
                 self._json({"output": output,
                             "awaiting_continue": self.server.world.awaiting_continue(token),
-                            "progress": self.server.world.player_progression(token)})
+                            "progress": self.server.world.player_progression(token),
+                            "side_panel": self.server.world.player_side_panel(token)})
             except KeyError as exc:
                 self._json({"error": str(exc)}, HTTPStatus.UNAUTHORIZED)
             return

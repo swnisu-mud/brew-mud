@@ -19,6 +19,39 @@ function updateProgress(progress) {
     : `Next rank: ${progress.next_rank}`;
 }
 
+function updateSidePanel(sidePanel) {
+  if (!sidePanel) return;
+  const quest = sidePanel.quest;
+  document.querySelector("#quest-panel-title").textContent = quest.status;
+  document.querySelector("#quest-title").textContent = quest.title;
+  document.querySelector("#quest-description").textContent = quest.description;
+  document.querySelector("#quest-objective").textContent = quest.objective;
+
+  // A missing map means a pop quiz is intentionally hiding the new room.
+  if (!sidePanel.map) return;
+  const map = sidePanel.map;
+  document.querySelector("#mini-map-title").textContent = map.title;
+  document.querySelector("#mini-map-current").textContent = `Here: ${map.current_name}`;
+  const diagram = document.querySelector("#mini-map");
+  diagram.replaceChildren();
+  map.rows.forEach((nodes, rowIndex) => {
+    const row = document.createElement("div");
+    row.className = "mini-map-row";
+    row.style.setProperty("--map-columns", nodes.length);
+    if (rowIndex < map.rows.length - 1) row.classList.add("has-next-row");
+    nodes.forEach((node) => {
+      const marker = document.createElement("span");
+      marker.className = `mini-map-node${node.current ? " current" : ""}`;
+      marker.textContent = node.code;
+      marker.title = node.name;
+      marker.setAttribute("aria-label", `${node.name}${node.current ? ", your current location" : ""}`);
+      row.appendChild(marker);
+    });
+    diagram.appendChild(row);
+  });
+  diagram.setAttribute("aria-label", `${map.title} regional map. Current location: ${map.current_name}.`);
+}
+
 function append(text, kind = "world") {
   if (!text) return;
   const block = document.createElement("div");
@@ -167,6 +200,7 @@ document.querySelector("#login-form").addEventListener("submit", async (event) =
     pendingWelcome = data.output;
     awaitingQuizContinue = Boolean(data.awaiting_continue);
     updateProgress(data.progress);
+    updateSidePanel(data.side_panel);
     document.querySelector("#login").hidden = true;
     document.querySelector("#status").textContent = "connected";
     if (data.show_instructions) {
@@ -197,6 +231,7 @@ document.querySelector("#command-form").addEventListener("submit", async (event)
     append(data.output);
     awaitingQuizContinue = Boolean(data.awaiting_continue);
     updateProgress(data.progress);
+    updateSidePanel(data.side_panel);
   } catch (err) {
     append(err.message, "error");
   }
@@ -216,6 +251,7 @@ document.addEventListener("keydown", async (event) => {
     append(data.output);
     awaitingQuizContinue = Boolean(data.awaiting_continue);
     updateProgress(data.progress);
+    updateSidePanel(data.side_panel);
   } catch (err) {
     awaitingQuizContinue = true;
     append(err.message, "error");

@@ -18,7 +18,7 @@ from brewmud.game import (
 from brewmud.models import GameState
 from brewmud.quests import QUESTS
 from brewmud.quizzes import QUIZZES
-from brewmud.regional_maps import REGIONAL_MAPS, ROOM_REGION
+from brewmud.regional_maps import REGIONAL_MAPS, ROOM_REGION, compact_map_data
 from brewmud.server import MUDServer
 from brewmud.world import NPC_DESCRIPTIONS, NPC_DIALOGUE, NPCS, ROOMS
 
@@ -293,6 +293,25 @@ class CommandTests(unittest.TestCase):
     def test_map_index(self):
         self.assertIn("MAP QUALITY", self.game.map("all"))
 
+    def test_side_panel_tracks_quest_and_regional_map(self):
+        panel = self.game.side_panel_data()
+        self.assertEqual(panel["quest"]["status"], "Next quest")
+        self.assertEqual(panel["map"]["current_name"], "Brewery Gate")
+        self.game.talk("coordinator")
+        panel = self.game.side_panel_data()
+        self.assertEqual(panel["quest"]["status"], "Active quest")
+        self.assertEqual(panel["quest"]["title"], "First Day in the Brewery")
+        self.assertIn("Head Maltster", panel["quest"]["objective"])
+
+    def test_side_panel_map_waits_for_hidden_room_description(self):
+        self.game.state.pending_room_description = "HIDDEN ROOM"
+        self.assertIsNone(self.game.side_panel_data()["map"])
+
+    def test_compact_map_marks_current_room(self):
+        map_data = compact_map_data("brewery_gate")
+        current = [node for row in map_data["rows"] for node in row if node["current"]]
+        self.assertEqual([(node["code"], node["name"]) for node in current], [("GAT", "Brewery Gate")])
+
     def test_save_and_load_multiple_quests(self):
         self.game.talk("coordinator")
         with tempfile.TemporaryDirectory() as directory:
@@ -426,6 +445,15 @@ class MultiplayerTests(unittest.TestCase):
 
         server.command(token, "quit")
         self.assertIsNone(server.player_progression(token))
+
+    def test_player_side_panel_returns_live_quest_and_map_context(self):
+        server = MUDServer(":memory:")
+        self.addCleanup(server.close)
+        token, _ = server.register("Alice", "barley-123")
+
+        panel = server.player_side_panel(token)
+
+        self.assertEqual(panel, server._players[token].game.side_panel_data())
 
     def test_account_progress_survives_logout_and_login(self):
         server = MUDServer(":memory:")

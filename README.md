@@ -84,6 +84,12 @@ On Windows PowerShell, activate the environment with `.venv\Scripts\Activate.ps1
 
 The quest format is deliberately declarative: new quest lines can be added without changing the command engine.
 
+## Student materials
+
+- `docs/BrewMUD_Student_Information_Sheet.docx` introduces the game, commands, quests, quizzes, and regional maps.
+- `docs/BBMB_1200_First_Test_Study_Guide.docx` is a conventional study guide covering the same first-test content, with review questions and explanatory answers.
+- Editable Markdown sources for both documents are stored beside the Word files in `docs/`.
+
 ## Publishing
 
 The local repository is configured with:

@@ -199,9 +199,9 @@ class DocumentBuilder:
         width.set(w("w"), "0")
         width.set(w("type"), "auto")
         caption = ET.SubElement(properties, w("tblCaption"))
-        set_val(caption, "BrewMUD command reference")
+        set_val(caption, f"Reference table: {'; '.join(headers)}")
         description = ET.SubElement(properties, w("tblDescription"))
-        set_val(description, "Keyboard commands and an explanation of what each command does")
+        set_val(description, f"A reference table with columns: {', '.join(headers)}")
 
         grid = ET.SubElement(table, w("tblGrid"))
         for grid_width in ("2600", "6200"):
@@ -373,7 +373,14 @@ def document_relationships(builder: DocumentBuilder) -> bytes:
     return xml.encode("utf-8")
 
 
-def write_docx(builder: DocumentBuilder) -> None:
+def write_docx(
+    builder: DocumentBuilder,
+    output: Path = OUTPUT,
+    *,
+    title: str = "BrewMUD Student Information Sheet",
+    subject: str = "Accessible instructions and study guidance for BrewMUD",
+    description: str = "Student guide to navigating BrewMUD, completing quests, and using pop quizzes as a study guide.",
+) -> None:
     now = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     content_types = b'''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
@@ -393,18 +400,18 @@ def write_docx(builder: DocumentBuilder) -> None:
 </Relationships>'''
     core = f'''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <dc:title>BrewMUD Student Information Sheet</dc:title>
-  <dc:subject>Accessible instructions and study guidance for BrewMUD</dc:subject>
+  <dc:title>{escape(title)}</dc:title>
+  <dc:subject>{escape(subject)}</dc:subject>
   <dc:creator>BBMB 1200 BrewMUD</dc:creator>
-  <dc:description>Student guide to navigating BrewMUD, completing quests, and using pop quizzes as a study guide.</dc:description>
+  <dc:description>{escape(description)}</dc:description>
   <dcterms:created xsi:type="dcterms:W3CDTF">{now}</dcterms:created>
   <dcterms:modified xsi:type="dcterms:W3CDTF">{now}</dcterms:modified>
 </cp:coreProperties>'''.encode("utf-8")
     app = b'''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"><Application>BrewMUD handout builder</Application><AppVersion>1.0</AppVersion></Properties>'''
 
-    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    with zipfile.ZipFile(OUTPUT, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:
         archive.writestr("[Content_Types].xml", content_types)
         archive.writestr("_rels/.rels", root_relationships)
         archive.writestr("docProps/core.xml", core)

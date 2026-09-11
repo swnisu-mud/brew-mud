@@ -62,7 +62,7 @@ QUESTS: dict[str, Quest] = {
 
     "stalled_mash": Quest("The Stalled Mash", "head_brewer",
         "An iodine-dark sample worries the Head Brewer. “Decide whether access, temperature, pH, or enzyme activity is responsible.”", (
-        T("miller", "Ask whether milling exposed the endosperm.", "The crush exposed starch while retaining husk pieces for the filter bed."),
+        T("miller", "Find the Miller and ask whether milling exposed the endosperm.", "The crush exposed starch while retaining husk pieces for the filter bed."),
         T("gelatinized_starch", "Check starch accessibility.", "The swollen granules have lost ordered structure and expose glucan chains."),
         T("beta_amylase", "Consult Beta-Amylase.", "Beta-amylase releases maltose from nonreducing ends but is relatively heat-sensitive."),
         T("alpha_amylase", "Consult Alpha-Amylase.", "Alpha-amylase cleaves internal alpha-1,4 bonds, lowers viscosity, and creates varied dextrins."),

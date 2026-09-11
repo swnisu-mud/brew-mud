@@ -115,6 +115,9 @@ class CommandTests(unittest.TestCase):
         self.assertIn("First Day", journal)
         self.assertIn("Wake the Sleeping Grain", journal)
 
+    def test_stalled_mash_first_objective_names_the_miller(self):
+        self.assertIn("Miller", QUESTS["stalled_mash"].steps[0].objective)
+
     def test_room_description_tracks_active_objectives(self):
         self.game.talk("training coordinator")
         room = self.game.describe_room()

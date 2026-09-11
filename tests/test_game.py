@@ -89,6 +89,9 @@ class CommandTests(unittest.TestCase):
     def test_case_insensitive_commands_and_names(self):
         self.assertIn("QUEST STARTED", self.game.execute("TaLk COORDINATOR"))
 
+    def test_trainer_is_a_direct_coordinator_alias(self):
+        self.assertIn("QUEST STARTED", self.game.execute("talk trainer"))
+
     def test_coordinator_sets_an_initial_assignment_not_a_tour(self):
         intro = Game(pop_quizzes_enabled=False).introduction()
         self.assertNotIn("full brewery tour", intro.casefold())

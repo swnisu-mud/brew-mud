@@ -159,9 +159,16 @@ NAMES = {
 }
 
 
+# Natural synonyms that are not simple prefixes of an NPC's displayed name.
+EXTRA_NPC_ALIASES = {
+    "training_coordinator": ("trainer",),
+}
+
+
 def aliases(key: str, name: str) -> tuple[str, ...]:
     values = {key, key.replace("_", " "), name.casefold()}
     values.update(part.strip("()") for part in name.casefold().split() if len(part.strip("()")) > 2)
+    values.update(EXTRA_NPC_ALIASES.get(key, ()))
     return tuple(sorted(values))
 
 

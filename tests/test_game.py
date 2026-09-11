@@ -100,6 +100,7 @@ class WorldTests(unittest.TestCase):
             order.append(available[0])
         self.assertEqual(order[:6], ["orientation", "malt_house", "water_profile",
                                     "starch_structure", "stalled_mash", "clear_wort"])
+        self.assertTrue(all(quest.lead for quest in QUESTS.values()))
 
     def test_lecture_four_topics_have_dedicated_learning_spaces(self):
         expected = {
@@ -203,6 +204,12 @@ class CommandTests(unittest.TestCase):
         self.assertIn("you found me", response)
         self.assertIn("incoming grain was uniform", response)
         self.assertIn("Find the Barley Inspector", response)
+
+    def test_next_lead_explains_the_problem_and_destination(self):
+        self.game.state.quest_stages = {"orientation": len(QUESTS["orientation"].steps) - 1}
+        response = self.game.talk("coordinator")
+        self.assertIn("NEXT LEAD — A barley lot is germinating unevenly", response)
+        self.assertIn("Find Head Maltster at Malt Curing Floor", response)
 
     def test_room_tracker_is_compact_when_many_quests_are_active(self):
         keys = list(QUESTS)[:5]

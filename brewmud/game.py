@@ -231,9 +231,7 @@ class Game:
             response = f"{result}\n\nQUEST COMPLETE — {quest.title}" + self._award_insight(quest.reward)
             next_quest = self._next_available_quest()
             if next_quest:
-                giver_room = next(r.key for r in ROOMS.values() if next_quest.giver in r.npcs)
-                response += (f"\n\nNEXT LEAD — Find {NPCS[next_quest.giver].name} at "
-                             f"{ROOMS[giver_room].name}.")
+                response += f"\n\nNEXT LEAD — {self._quest_lead(next_quest)}"
             return response
         self.state.quest_stages[key] = stage
         return f"{result}\n\nOBJECTIVE UPDATED — {quest.steps[stage].objective}"
@@ -254,8 +252,7 @@ class Game:
         if not self.state.quest_stages:
             quest = self._next_available_quest()
             if quest:
-                giver_room = next(r.key for r in ROOMS.values() if quest.giver in r.npcs)
-                available.append(f"- AVAILABLE — {quest.title}: talk to {NPCS[quest.giver].name} at {ROOMS[giver_room].name}.")
+                available.append(f"- AVAILABLE — {quest.title}: {self._quest_lead(quest)}")
         if not self.state.quest_stages:
             lines.append("No active quest. Your next sequential assignment appears below.")
         lines.extend(available)
@@ -267,8 +264,8 @@ class Game:
             if not quest:
                 return "No active quest. You have completed every current brewery assignment."
             giver_room = next(r.key for r in ROOMS.values() if quest.giver in r.npcs)
-            return (f"NEXT QUEST — {quest.title}: find {NPCS[quest.giver].name} at "
-                    f"{ROOMS[giver_room].name}. {self._route_to(giver_room)}")
+            return (f"NEXT QUEST — {quest.title}: {self._quest_lead(quest)} "
+                    f"{self._route_to(giver_room)}")
         lines = ["QUEST HINTS"]
         for key, stage in self.state.quest_stages.items():
             step = QUESTS[key].steps[stage]
@@ -288,6 +285,12 @@ class Game:
              and all(required in self.state.completed_quests for required in quest.requires)),
             None,
         )
+
+    @staticmethod
+    def _quest_lead(quest) -> str:
+        giver_room = next(r.key for r in ROOMS.values() if quest.giver in r.npcs)
+        reason = f"{quest.lead} " if quest.lead else "A new brewery problem needs attention. "
+        return f"{reason}Find {NPCS[quest.giver].name} at {ROOMS[giver_room].name}."
 
     def notes(self) -> str:
         if not self.state.learned_facts:

@@ -4,7 +4,7 @@
 
 BrewMUD is a substitute for a typical study guide for our material on malting, mashing, and lautering. It is intended to be helpful and, hopefully, somewhat fun—or at least not boring. Instead of reading a list of review questions, you will explore a brewery, speak with its residents, and solve biochemical and brewing problems.
 
-**Questions on the test will come directly from the descriptions and pop quizzes in BrewMUD.** Read the text carefully. Finishing a quest quickly is not as useful as understanding what the rooms, objects, and characters are telling you.
+**Questions on the test will come directly from room and object descriptions, conversations with NPCs, and pop quizzes in BrewMUD.** Read the text carefully. Finishing a quest quickly is not as useful as understanding what the rooms, objects, and characters are telling you.
 
 Course link: ________________________________________________
 
@@ -80,7 +80,7 @@ When a quest ends, read the **NEXT LEAD** message. It explains the next brewery 
 
 Pop quizzes appear while you explore, but they test a location you visited previously—not the room you have just entered. Answer by entering only `A`, `B`, `C`, or `D`. The answer positions are randomized.
 
-- If you answer correctly, read the complete explanation before pressing a key to continue. These explanations are test material.
+- If you answer correctly, read the complete explanation before pressing a key to continue. Like the descriptions and NPC conversations, these explanations are test material.
 - If you are unsure, enter `PAUSE`. The room will appear so you can investigate, use your map, or discuss the question with a classmate. Enter `QUIZ` or `RESUME` when you are ready to try again.
 - An incorrect answer costs 2 Insight and pauses the quiz. Use the route provided to revisit the relevant location before answering again.
 
@@ -101,7 +101,7 @@ The sound and screen flash are only alerts; the important part is the question a
 1. Follow the quests in order so that each topic builds on the last.
 2. Read each new room description instead of moving immediately.
 3. Use `LOOK` on residents and objects, then `TALK` to the residents.
-4. Treat every pop-quiz explanation as material you may see on the test.
+4. Treat room and object descriptions, NPC conversations, and every pop-quiz explanation as material you may see on the test.
 5. Use `NOTES`, `JOURNAL`, `MAP`, and `HINT` whenever you need to review or reorient yourself.
 6. Discuss difficult questions with classmates, but make sure you can explain the answer yourself.
 

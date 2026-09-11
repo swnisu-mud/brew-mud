@@ -169,6 +169,12 @@ class MUDServer:
             session = self._players.get(token)
             return bool(session and session.game.awaiting_quiz_continue)
 
+    def player_progression(self, token: str) -> dict[str, object] | None:
+        """Return the live LEVEL summary for one authenticated player."""
+        with self._lock:
+            session = self._players.get(token)
+            return session.game.progression_data() if session else None
+
     def instructor_progress(self) -> list[dict[str, object]]:
         """Return the same progression fields players see with LEVEL."""
         with self._lock:

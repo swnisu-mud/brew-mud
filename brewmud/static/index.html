@@ -67,7 +67,20 @@
     </section>
 
     <section id="game" class="game" hidden>
-      <div id="terminal" class="terminal" role="log" aria-live="polite" aria-label="Game output"></div>
+      <div class="play-area">
+        <div id="terminal" class="terminal" role="log" aria-live="polite" aria-label="Game output"></div>
+        <aside id="progress-panel" class="progress-panel" aria-labelledby="progress-title">
+          <p id="progress-title" class="progress-title">Your progress</p>
+          <p id="progress-rank" class="progress-rank">Brewery Visitor</p>
+          <dl>
+            <div><dt>Insight</dt><dd id="progress-insight">0</dd></div>
+            <div><dt>Locations</dt><dd id="progress-locations">0/90</dd></div>
+            <div><dt>Quests</dt><dd id="progress-quests">0/16</dd></div>
+            <div><dt>Checks</dt><dd id="progress-checks">0/39</dd></div>
+          </dl>
+          <p id="progress-next" class="progress-next">Next rank: Malt House Hand at 20 Insight.</p>
+        </aside>
+      </div>
       <form id="command-form" class="command-row">
         <label for="command">command&gt;</label>
         <input id="command" autocomplete="off" spellcheck="false" aria-label="Command">

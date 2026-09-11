@@ -16,10 +16,10 @@ from .world import AMBIENT_SPEECH, DIRECTION_ALIASES, FACTS, ITEMS, NPCS, ROOMS
 
 RANKS = ((0,"Brewery Visitor"), (20,"Malt House Hand"), (60,"Brewhouse Apprentice"),
          (120,"Fermentation Technician"), (220,"Brewery Biochemist"), (360,"Master Brewer"))
-POP_QUIZ_INITIAL_DELAY = 6
-POP_QUIZ_COOLDOWN = 6
-POP_QUIZ_GUARANTEE = 10
-POP_QUIZ_CHANCE = 0.45
+POP_QUIZ_INITIAL_DELAY = 4
+POP_QUIZ_COOLDOWN = 4
+POP_QUIZ_GUARANTEE = 7
+POP_QUIZ_CHANCE = 0.60
 WRONG_ANSWER_PENALTY = 2
 
 

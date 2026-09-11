@@ -25,7 +25,7 @@ body {
   font-family: ui-monospace, "Cascadia Code", "SFMono-Regular", Consolas, monospace;
 }
 
-.shell { width: min(940px, calc(100% - 2rem)); margin: 0 auto; padding: 2rem 0; }
+.shell { width: min(1120px, calc(100% - 2rem)); margin: 0 auto; padding: 2rem 0; }
 header { display: flex; align-items: end; justify-content: space-between; margin-bottom: 1.25rem; }
 .connection-controls { display: flex; align-items: center; gap: .85rem; padding-bottom: .2rem; }
 h1, h2, p { margin-top: 0; }
@@ -73,7 +73,25 @@ button:hover { filter: brightness(1.1); }
 .sound-toggle:hover, .sound-toggle[aria-pressed="true"] { color: var(--bright); border-color: var(--bright); }
 .error { color: #ff8e8e; min-height: 1.2em; margin: .7rem 0 0; }
 
+.play-area { display: grid; grid-template-columns: minmax(0, 1fr) 230px; }
 .terminal { height: min(65vh, 650px); overflow-y: auto; padding: 1.2rem; scrollbar-color: var(--muted) transparent; }
+.progress-panel {
+  border-left: 1px solid var(--line); padding: 1.15rem 1rem;
+  background: rgba(8, 13, 8, .48);
+}
+.progress-title {
+  margin: 0 0 .45rem; color: var(--muted); font-size: .72rem;
+  letter-spacing: .13em; text-transform: uppercase;
+}
+.progress-rank { margin: 0 0 1rem; color: var(--bright); font-weight: 800; line-height: 1.35; }
+.progress-panel dl { margin: 0; }
+.progress-panel dl div {
+  display: flex; justify-content: space-between; gap: .75rem;
+  padding: .42rem 0; border-bottom: 1px solid rgba(242, 184, 75, .11);
+}
+.progress-panel dt { color: var(--muted); }
+.progress-panel dd { margin: 0; color: var(--cyan); font-weight: 700; }
+.progress-next { margin: 1rem 0 0; color: var(--ink); font-size: .76rem; line-height: 1.45; }
 .message { white-space: pre-wrap; line-height: 1.55; margin-bottom: 1.15rem; }
 .message.command { color: var(--amber); margin-bottom: .45rem; }
 .message.social { color: var(--cyan); }
@@ -112,11 +130,23 @@ body.quiz-flash::before { animation: quiz-pulse .85s ease-out; }
 code { color: var(--amber); }
 
 @media (max-width: 650px) {
-  .shell { width: min(100% - 1rem, 940px); padding: .75rem 0; }
+  .shell { width: min(100% - 1rem, 1120px); padding: .75rem 0; }
   .login { grid-template-columns: 1fr; gap: 1rem; }
   .instruction-grid { grid-template-columns: 1fr; }
   #instructions-continue { display: inline-block; }
   .account-fields { grid-template-columns: 1fr; gap: .35rem; }
+  .play-area { grid-template-columns: 1fr; }
+  .progress-panel {
+    grid-row: 1; border-left: 0; border-bottom: 1px solid var(--line);
+    padding: .7rem 1rem;
+  }
+  .progress-title { display: none; }
+  .progress-rank { margin: 0 0 .55rem; }
+  .progress-panel dl { display: grid; grid-template-columns: repeat(4, 1fr); gap: .7rem; }
+  .progress-panel dl div { display: block; padding: 0; border: 0; }
+  .progress-panel dt { font-size: .68rem; }
+  .progress-panel dd { font-size: .82rem; }
+  .progress-next { margin-top: .55rem; }
   .terminal { height: 65vh; }
   .shortcut { display: none; }
 }

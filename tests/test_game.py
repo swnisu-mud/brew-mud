@@ -8,7 +8,13 @@ from pathlib import Path
 from unittest.mock import patch
 
 from brewmud.accounts import AccountStore
-from brewmud.game import Game
+from brewmud.game import (
+    POP_QUIZ_CHANCE,
+    POP_QUIZ_COOLDOWN,
+    POP_QUIZ_GUARANTEE,
+    POP_QUIZ_INITIAL_DELAY,
+    Game,
+)
 from brewmud.models import GameState
 from brewmud.quests import QUESTS
 from brewmud.quizzes import QUIZZES
@@ -298,6 +304,12 @@ class CommandTests(unittest.TestCase):
 
 
 class QuizTests(unittest.TestCase):
+    def test_pop_quiz_frequency_is_tuned_for_study_sessions(self):
+        self.assertEqual(POP_QUIZ_INITIAL_DELAY, 4)
+        self.assertEqual(POP_QUIZ_COOLDOWN, 4)
+        self.assertEqual(POP_QUIZ_GUARANTEE, 7)
+        self.assertEqual(POP_QUIZ_CHANCE, 0.60)
+
     def test_options_are_shuffled_and_bare_letter_works(self):
         game = Game(rng=random.Random(3), pop_quizzes_enabled=False)
         game.state.active_quiz = "mash_tun"
@@ -402,6 +414,18 @@ class MultiplayerTests(unittest.TestCase):
         self.assertTrue(report[0]["online"])
         for field in ("rank", "insight", "locations", "quests", "knowledge_checks", "next_rank"):
             self.assertEqual(report[0][field], expected[field])
+
+    def test_player_progression_returns_live_level_summary(self):
+        server = MUDServer(":memory:")
+        self.addCleanup(server.close)
+        token, _ = server.register("Alice", "barley-123")
+
+        progress = server.player_progression(token)
+
+        self.assertEqual(progress, server._players[token].game.progression_data())
+
+        server.command(token, "quit")
+        self.assertIsNone(server.player_progression(token))
 
     def test_account_progress_survives_logout_and_login(self):
         server = MUDServer(":memory:")

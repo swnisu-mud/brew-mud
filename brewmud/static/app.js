@@ -7,6 +7,18 @@ let awaitingQuizContinue = false;
 const terminal = document.querySelector("#terminal");
 const commandInput = document.querySelector("#command");
 
+function updateProgress(progress) {
+  if (!progress) return;
+  document.querySelector("#progress-rank").textContent = progress.rank;
+  document.querySelector("#progress-insight").textContent = progress.insight;
+  document.querySelector("#progress-locations").textContent = `${progress.locations}/${progress.locations_total}`;
+  document.querySelector("#progress-quests").textContent = `${progress.quests}/${progress.quests_total}`;
+  document.querySelector("#progress-checks").textContent = `${progress.knowledge_checks}/${progress.knowledge_checks_total}`;
+  document.querySelector("#progress-next").textContent = progress.next_rank === "Highest current rank achieved"
+    ? progress.next_rank
+    : `Next rank: ${progress.next_rank}`;
+}
+
 function append(text, kind = "world") {
   if (!text) return;
   const block = document.createElement("div");
@@ -154,6 +166,7 @@ document.querySelector("#login-form").addEventListener("submit", async (event) =
     token = data.token;
     pendingWelcome = data.output;
     awaitingQuizContinue = Boolean(data.awaiting_continue);
+    updateProgress(data.progress);
     document.querySelector("#login").hidden = true;
     document.querySelector("#status").textContent = "connected";
     if (data.show_instructions) {
@@ -183,6 +196,7 @@ document.querySelector("#command-form").addEventListener("submit", async (event)
     });
     append(data.output);
     awaitingQuizContinue = Boolean(data.awaiting_continue);
+    updateProgress(data.progress);
   } catch (err) {
     append(err.message, "error");
   }
@@ -201,6 +215,7 @@ document.addEventListener("keydown", async (event) => {
     });
     append(data.output);
     awaitingQuizContinue = Boolean(data.awaiting_continue);
+    updateProgress(data.progress);
   } catch (err) {
     awaitingQuizContinue = true;
     append(err.message, "error");

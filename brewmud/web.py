@@ -132,7 +132,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                     str(body.get("name", "")), str(body.get("password", ""))
                 )
                 self._json({"token": token, "output": output, "show_instructions": False,
-                            "awaiting_continue": self.server.world.awaiting_continue(token)})
+                            "awaiting_continue": self.server.world.awaiting_continue(token),
+                            "progress": self.server.world.player_progression(token)})
             except ValueError as exc:
                 self._json({"error": str(exc)}, HTTPStatus.BAD_REQUEST)
             return
@@ -142,7 +143,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                     str(body.get("name", "")), str(body.get("password", ""))
                 )
                 self._json({"token": token, "output": output, "show_instructions": True,
-                            "awaiting_continue": self.server.world.awaiting_continue(token)},
+                            "awaiting_continue": self.server.world.awaiting_continue(token),
+                            "progress": self.server.world.player_progression(token)},
                            HTTPStatus.CREATED)
             except ValueError as exc:
                 self._json({"error": str(exc)}, HTTPStatus.BAD_REQUEST)
@@ -152,7 +154,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                 output = self.server.world.command(str(body.get("token", "")), str(body.get("command", "")))
                 token = str(body.get("token", ""))
                 self._json({"output": output,
-                            "awaiting_continue": self.server.world.awaiting_continue(token)})
+                            "awaiting_continue": self.server.world.awaiting_continue(token),
+                            "progress": self.server.world.player_progression(token)})
             except KeyError as exc:
                 self._json({"error": str(exc)}, HTTPStatus.UNAUTHORIZED)
             return

@@ -32,6 +32,22 @@ class Game:
         self.rng = rng or random.Random()
         self.pop_quizzes_enabled = pop_quizzes_enabled
         self.running = True
+        self.reset_quest_titles = self._normalize_active_quests()
+
+    def _normalize_active_quests(self) -> list[str]:
+        """Convert pre-sequence saves to one valid active assignment."""
+        active = [key for key in QUESTS if key in self.state.quest_stages]
+        valid = [key for key in active if all(
+            required in self.state.completed_quests for required in QUESTS[key].requires
+        )]
+        keep = valid[0] if valid else None
+        removed = [key for key in active if key != keep]
+        if removed:
+            self.state.quest_stages = (
+                {keep: self.state.quest_stages[keep]} if keep is not None else {}
+            )
+            self.state.companion = None
+        return [QUESTS[key].title for key in removed]
 
     @property
     def room(self):
@@ -42,11 +58,15 @@ class Game:
         return self.state.pending_room_description is not None and not self.state.active_quiz and not self.state.paused_quiz
 
     def introduction(self) -> str:
+        if not self.state.quest_stages and not self.state.completed_quests:
+            guidance = "Type TALK COORDINATOR to begin"
+        else:
+            guidance = "Type JOURNAL to review your saved objective"
         return ("BREWMUD: The Biochemistry of Beer\n"
-                "You are a new brewery biochemistry trainee. Seventy connected locations span maltings, "
+                "You are a brewery biochemistry trainee. Seventy connected locations span maltings, "
                 "brewhouse, fermentation cellar, hop yard, quality labs, and packaging. Residents throughout "
                 "the brewery have substantial non-combat quests.\n"
-                "Type TALK COORDINATOR to begin, HELP for commands, MAP for a regional map, or JOURNAL for objectives.\n\n"
+                f"{guidance}, HELP for commands, or MAP for a regional map.\n\n"
                 + self.describe_room())
 
     def describe_room(self) -> str:
@@ -183,14 +203,27 @@ class Game:
                     return self._advance_quest(quest_key, step.result)
 
         quest_key = GIVER_QUESTS.get(key)
-        if quest_key and quest_key not in self.state.completed_quests and quest_key not in self.state.quest_stages:
-            quest = QUESTS[quest_key]
-            if all(required in self.state.completed_quests for required in quest.requires):
-                self.state.quest_stages[quest_key] = 0
-                return (f"{quest.offer}\n\nQUEST STARTED — {quest.title}\n"
-                        f"OBJECTIVE — {quest.steps[0].objective}")
         if quest_key in self.state.completed_quests:
             return f'“Thanks again for your work on {QUESTS[quest_key].title},” says {NPCS[key].name}.'
+        if quest_key and quest_key in self.state.quest_stages:
+            stage = self.state.quest_stages[quest_key]
+            return (f'“Keep following the evidence,” says {NPCS[key].name}.\n\n'
+                    f"CURRENT OBJECTIVE — {QUESTS[quest_key].steps[stage].objective}")
+        if quest_key:
+            quest = QUESTS[quest_key]
+            if self.state.quest_stages:
+                active_key, active_stage = next(iter(self.state.quest_stages.items()))
+                return (f"{NPCS[key].dialogue}\n\nONE QUEST AT A TIME — Finish {QUESTS[active_key].title} first.\n"
+                        f"CURRENT OBJECTIVE — {QUESTS[active_key].steps[active_stage].objective}")
+            missing = [required for required in quest.requires
+                       if required not in self.state.completed_quests]
+            if missing:
+                prerequisite = QUESTS[missing[0]]
+                return (f"{NPCS[key].dialogue}\n\nQUEST NOT YET AVAILABLE — "
+                        f"Complete {prerequisite.title} first.")
+            self.state.quest_stages[quest_key] = 0
+            return (f"{quest.offer}\n\nQUEST STARTED — {quest.title}\n"
+                    f"OBJECTIVE — {quest.steps[0].objective}")
         return NPCS[key].dialogue
 
     def _advance_quest(self, key: str, result: str) -> str:
@@ -199,7 +232,13 @@ class Game:
         if stage >= len(quest.steps):
             del self.state.quest_stages[key]
             self.state.completed_quests.add(key)
-            return f"{result}\n\nQUEST COMPLETE — {quest.title}" + self._award_insight(quest.reward)
+            response = f"{result}\n\nQUEST COMPLETE — {quest.title}" + self._award_insight(quest.reward)
+            next_quest = self._next_available_quest()
+            if next_quest:
+                giver_room = next(r.key for r in ROOMS.values() if next_quest.giver in r.npcs)
+                response += (f"\n\nNEXT LEAD — Find {NPCS[next_quest.giver].name} at "
+                             f"{ROOMS[giver_room].name}.")
+            return response
         self.state.quest_stages[key] = stage
         return f"{result}\n\nOBJECTIVE UPDATED — {quest.steps[stage].objective}"
 
@@ -216,19 +255,24 @@ class Game:
             quest = QUESTS[key]
             lines.append(f"- ACTIVE — {quest.title}: {quest.steps[stage].objective}")
         available = []
-        for key, quest in QUESTS.items():
-            if key in self.state.quest_stages or key in self.state.completed_quests: continue
-            giver_room = next((r.key for r in ROOMS.values() if quest.giver in r.npcs), None)
-            if giver_room in self.state.discovered_rooms and all(req in self.state.completed_quests for req in quest.requires):
+        if not self.state.quest_stages:
+            quest = self._next_available_quest()
+            if quest:
+                giver_room = next(r.key for r in ROOMS.values() if quest.giver in r.npcs)
                 available.append(f"- AVAILABLE — {quest.title}: talk to {NPCS[quest.giver].name} at {ROOMS[giver_room].name}.")
         if not self.state.quest_stages:
-            lines.append("No active quests. Talk to residents who mention a problem; discovered leads appear below.")
+            lines.append("No active quest. Your next sequential assignment appears below.")
         lines.extend(available)
         return "\n".join(lines)
 
     def hint(self) -> str:
         if not self.state.quest_stages:
-            return "No active quest. Talk to the Training Coordinator or to residents who ask for help. JOURNAL lists discovered leads."
+            quest = self._next_available_quest()
+            if not quest:
+                return "No active quest. You have completed every current brewery assignment."
+            giver_room = next(r.key for r in ROOMS.values() if quest.giver in r.npcs)
+            return (f"NEXT QUEST — {quest.title}: find {NPCS[quest.giver].name} at "
+                    f"{ROOMS[giver_room].name}. {self._route_to(giver_room)}")
         lines = ["QUEST HINTS"]
         for key, stage in self.state.quest_stages.items():
             step = QUESTS[key].steps[stage]
@@ -239,6 +283,15 @@ class Game:
             route = self._route_to(room_key) if room_key else "Use MAP to explore."
             lines.append(f"- {QUESTS[key].title}: {step.objective} {route}")
         return "\n".join(lines)
+
+    def _next_available_quest(self):
+        return next(
+            (quest for key, quest in QUESTS.items()
+             if key not in self.state.quest_stages
+             and key not in self.state.completed_quests
+             and all(required in self.state.completed_quests for required in quest.requires)),
+            None,
+        )
 
     def notes(self) -> str:
         if not self.state.learned_facts:

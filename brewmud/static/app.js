@@ -5,7 +5,6 @@ let soundEnabled = true;
 let pendingWelcome = "";
 const terminal = document.querySelector("#terminal");
 const commandInput = document.querySelector("#command");
-const groupInput = document.querySelector("#group-message");
 
 function append(text, kind = "world") {
   if (!text) return;
@@ -165,31 +164,13 @@ document.querySelector("#command-form").addEventListener("submit", async (event)
   if (soundEnabled) ensureAudio();
   const command = commandInput.value.trim();
   if (!command || !token) return;
-  append(`brew> ${command}`, "command");
+  append(`command> ${command}`, "command");
   commandInput.value = "";
   try {
     const data = await api("/api/command", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify({token, command}),
-    });
-    append(data.output);
-  } catch (err) {
-    append(err.message, "error");
-  }
-});
-
-document.querySelector("#group-form").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const message = groupInput.value.trim();
-  if (!message || !token) return;
-  append(`group> ${message}`, "group-command");
-  groupInput.value = "";
-  try {
-    const data = await api("/api/command", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({token, command: `group ${message}`}),
     });
     append(data.output);
   } catch (err) {

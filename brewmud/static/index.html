@@ -58,7 +58,7 @@
         </div>
         <div>
           <h3>Work together</h3>
-          <p>Use <code>WHO</code> to find other players and <code>FOLLOW</code> to travel together. After joining a group, type ordinary conversation in the <code>group&gt;</code> box. Pop quizzes are individual, but discussion is encouraged.</p>
+          <p>Use <code>WHO</code> to see other players. When someone is in your location, enter <code>SAY hello</code> in the command box to speak to them. Players explore independently, and pop quizzes remain individual.</p>
         </div>
       </div>
       <p class="first-step">Begin by entering <code>TALK TRAIN</code> when you reach the brewery.</p>
@@ -69,16 +69,11 @@
     <section id="game" class="game" hidden>
       <div id="terminal" class="terminal" role="log" aria-live="polite" aria-label="Game output"></div>
       <form id="command-form" class="command-row">
-        <label for="command">brew&gt;</label>
+        <label for="command">command&gt;</label>
         <input id="command" autocomplete="off" spellcheck="false" aria-label="Command">
         <button type="submit">Send</button>
       </form>
-      <form id="group-form" class="group-row">
-        <label for="group-message">group&gt;</label>
-        <input id="group-message" autocomplete="off" spellcheck="true" aria-label="Follow-group message" placeholder="Talk to your follow group without typing SAY">
-        <button type="submit">Chat</button>
-      </form>
-      <p class="shortcut">Try <code>look</code>, <code>map</code>, <code>who</code>, or <code>help</code>. Use <code>SAY</code> in the command box for public room conversation.</p>
+      <p class="shortcut">Try <code>look</code>, <code>map</code>, <code>who</code>, <code>say hello</code>, or <code>help</code>.</p>
     </section>
   </main>
   <script src="/app.js"></script>

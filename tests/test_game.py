@@ -9,6 +9,7 @@ from unittest.mock import patch
 
 from brewmud.accounts import AccountStore
 from brewmud.game import Game
+from brewmud.models import GameState
 from brewmud.quests import QUESTS
 from brewmud.quizzes import QUIZZES
 from brewmud.regional_maps import REGIONAL_MAPS, ROOM_REGION
@@ -66,6 +67,7 @@ class WorldTests(unittest.TestCase):
         for key, quest in QUESTS.items():
             with self.subTest(quest=key):
                 game = Game(pop_quizzes_enabled=False)
+                game.state.completed_quests.update(quest.requires)
                 game.state.room = npc_room(quest.giver)
                 start = game.talk(quest.giver)
                 self.assertIn("QUEST STARTED", start)
@@ -79,6 +81,19 @@ class WorldTests(unittest.TestCase):
                         result = game.talk(step.destination)
                     self.assertTrue(result)
                 self.assertIn(key, game.state.completed_quests)
+
+    def test_quest_prerequisites_form_one_complete_sequence(self):
+        completed = set()
+        order = []
+        while len(completed) < len(QUESTS):
+            available = [key for key, quest in QUESTS.items()
+                         if key not in completed
+                         and all(required in completed for required in quest.requires)]
+            self.assertEqual(len(available), 1, (completed, available))
+            completed.add(available[0])
+            order.append(available[0])
+        self.assertEqual(order[:5], ["orientation", "malt_house", "water_profile",
+                                    "stalled_mash", "clear_wort"])
 
 
 class CommandTests(unittest.TestCase):
@@ -105,15 +120,32 @@ class CommandTests(unittest.TestCase):
         self.game.state.room = "germination_floor"
         self.assertIn("Gibberellic Acid", self.game.execute("look gibberlic acid"))
 
-    def test_journal_holds_multiple_active_quests(self):
+    def test_only_one_quest_can_be_active(self):
         self.game.talk("training coordinator")
         self.game.state.room = "cure_floor"
         self.game.talk("head maltster")  # orientation objective
-        self.game.talk("head maltster")  # starts malt quest
+        response = self.game.talk("head maltster")  # tries to start malt quest
         journal = self.game.journal()
-        self.assertIn("2 active", journal)
+        self.assertIn("ONE QUEST AT A TIME", response)
+        self.assertIn("1 active", journal)
         self.assertIn("First Day", journal)
-        self.assertIn("Wake the Sleeping Grain", journal)
+        self.assertNotIn("ACTIVE — Wake the Sleeping Grain", journal)
+
+    def test_quests_unlock_in_sequence(self):
+        game = Game(pop_quizzes_enabled=False)
+        game.state.room = npc_room("head_maltster")
+        self.assertIn("Complete First Day", game.talk("head maltster"))
+        game.state.completed_quests.add("orientation")
+        self.assertIn("QUEST STARTED — Wake the Sleeping Grain", game.talk("head maltster"))
+
+    def test_old_overlapping_quests_are_returned_to_sequence(self):
+        state = GameState.from_dict({
+            "version": 2,
+            "quest_stages": {"orientation": 3, "stalled_mash": 1},
+        })
+        game = Game(state=state, pop_quizzes_enabled=False)
+        self.assertEqual(game.state.quest_stages, {"orientation": 6})
+        self.assertEqual(game.reset_quest_titles, ["The Stalled Mash"])
 
     def test_stalled_mash_first_objective_names_the_miller(self):
         self.assertIn("Miller", QUESTS["stalled_mash"].steps[0].objective)
@@ -195,7 +227,7 @@ class QuizTests(unittest.TestCase):
 
 class MultiplayerTests(unittest.TestCase):
     def test_chat_presence_and_following(self):
-        server = MUDServer(":memory:")
+        server = MUDServer(":memory:", following_enabled=True)
         self.addCleanup(server.close)
         alice, _ = server.register("Alice", "barley-123")
         bob, _ = server.register("Bob", "maltose-123")
@@ -205,7 +237,7 @@ class MultiplayerTests(unittest.TestCase):
         self.assertEqual(server._players[alice].game.state.room, server._players[bob].game.state.room)
 
     def test_group_chat_reaches_only_the_follow_group(self):
-        server = MUDServer(":memory:")
+        server = MUDServer(":memory:", following_enabled=True)
         self.addCleanup(server.close)
         alice, _ = server.register("Alice", "barley-123")
         bob, _ = server.register("Bob", "maltose-123")
@@ -221,10 +253,20 @@ class MultiplayerTests(unittest.TestCase):
         self.assertEqual(server.poll(carol), [])
 
     def test_group_chat_requires_a_follow_group(self):
-        server = MUDServer(":memory:")
+        server = MUDServer(":memory:", following_enabled=True)
         self.addCleanup(server.close)
         alice, _ = server.register("Alice", "barley-123")
         self.assertIn("No one else", server.command(alice, "group Anyone here?"))
+
+    def test_following_and_private_groups_are_disabled_by_default(self):
+        server = MUDServer(":memory:")
+        self.addCleanup(server.close)
+        alice, _ = server.register("Alice", "barley-123")
+        bob, _ = server.register("Bob", "maltose-123")
+        self.assertIn("Following is disabled", server.command(bob, "follow Alice"))
+        self.assertIn("Private groups are disabled", server.command(alice, "group Hello"))
+        self.assertIn("You say", server.command(alice, "say Hello"))
+        self.assertIn("Alice says", "\n".join(server.poll(bob)))
 
     def test_players_have_independent_quest_state(self):
         server = MUDServer(":memory:")
@@ -246,6 +288,8 @@ class MultiplayerTests(unittest.TestCase):
         server.logout(token)
         restored, welcome = server.login("alice", "barley-123")
         self.assertIn("saved progress has been restored", welcome)
+        self.assertNotIn("TALK COORDINATOR to begin", welcome)
+        self.assertIn("JOURNAL", welcome)
         self.assertEqual(server._players[restored].game.state.room, saved_room)
         self.assertEqual(server._players[restored].game.state.insight, saved_insight)
         self.assertEqual(server._players[restored].game.state.quest_stages, {"orientation": 0})
@@ -318,14 +362,14 @@ class AssetTests(unittest.TestCase):
     def test_browser_assets_are_brewery_branded(self):
         static = Path(__file__).parents[1] / "brewmud" / "static"
         self.assertIn("BrewMUD", (static / "index.html").read_text())
-        self.assertIn("brew>", (static / "app.js").read_text())
+        self.assertIn("command>", (static / "app.js").read_text())
+        self.assertNotIn("brew>", (static / "app.js").read_text())
         self.assertNotIn("mito>", (static / "app.js").read_text())
         instructions = (static / "index.html").read_text()
         self.assertIn("TALK TRAIN", instructions)
         self.assertIn("Press any key to continue", instructions)
         self.assertIn("show_instructions", (static / "app.js").read_text())
-        self.assertIn('id="group-form"', instructions)
-        self.assertIn("group> ${message}", (static / "app.js").read_text())
+        self.assertNotIn('id="group-form"', instructions)
         self.assertLess(instructions.index("Create new account"), instructions.index("Log in</button>"))
 
     def test_render_blueprint_uses_web_service_and_health_check(self):

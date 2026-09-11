@@ -26,10 +26,13 @@ class MUDServer:
     belong to individual players; later party quests can live alongside them.
     """
 
-    def __init__(self, database_path: str | Path = "brewmud.db") -> None:
+    def __init__(self, database_path: str | Path = "brewmud.db", *, following_enabled: bool = False) -> None:
         self._players: dict[str, PlayerSession] = {}
         self._lock = threading.RLock()
         self._accounts = AccountStore(database_path)
+        # Retain the experimental follow/group implementation for a possible
+        # future course mode without exposing it in the current study guide.
+        self.following_enabled = following_enabled
 
     @staticmethod
     def _normalized_name(requested_name: str) -> str:
@@ -57,6 +60,10 @@ class MUDServer:
         session = PlayerSession(account.id, account.name, Game(state=account.state))
         self._players[token] = session
         self._broadcast(session.game.state.room, f"{account.name} checks in for a brewery shift.", exclude=token)
+        if session.game.reset_quest_titles:
+            reset = ", ".join(session.game.reset_quest_titles)
+            notice += ("\nQuest-line update: overlapping assignment(s) returned to the new "
+                       f"sequence: {reset}. They can be restarted when unlocked.")
         welcome = notice + "\n\n" + session.game.introduction() + self._occupants_text(token)
         self._save_session(session)
         return token, welcome
@@ -84,27 +91,40 @@ class MUDServer:
             if verb.lower() in {"say", "chat"}:
                 return self._say(token, argument)
             if verb.lower() in {"group", "party"}:
+                if not self.following_enabled:
+                    return "Private groups are disabled. Use SAY to speak to everyone in your room."
                 return self._group_say(token, argument)
             if verb.lower() == "who":
                 return self._who(token)
             if verb.lower() == "follow":
+                if not self.following_enabled:
+                    return "Following is disabled in this study-guide version. You can still explore and use SAY together."
                 return self._follow(token, argument)
             if verb.lower() in {"unfollow", "nofollow"}:
+                if not self.following_enabled:
+                    return "Following is disabled in this study-guide version."
                 return self._unfollow(token)
             if verb.lower() == "help":
                 response = (
                     session.game.help()
                     + "\n  SAY <message>       Speak to players in your room"
-                    + "\n  GROUP <message>     Speak privately to your follow group"
                     + "\n  WHO                 List nearby and online players"
-                    + "\n  FOLLOW <player>     Move with another player"
-                    + "\n  UNFOLLOW            Stop following"
                 )
+                if self.following_enabled:
+                    response += (
+                        "\n  GROUP <message>     Speak privately to your follow group"
+                        "\n  FOLLOW <player>     Move with another player"
+                        "\n  UNFOLLOW            Stop following"
+                    )
                 if session.game.awaiting_quiz_continue:
                     response += "\n\nCONTINUE — Press C to reveal the room."
                 return response
 
-            if self._is_movement_command(command) and session.game.state.active_quiz is None:
+            if (
+                self.following_enabled
+                and self._is_movement_command(command)
+                and session.game.state.active_quiz is None
+            ):
                 return self._move_group(token, command)
 
             old_room = session.game.state.room
@@ -176,11 +196,10 @@ class MUDServer:
         here = [p.name for p in self._players.values() if p.game.state.room == session.game.state.room]
         everyone = sorted(p.name for p in self._players.values())
         lines = [f"Here: {', '.join(sorted(here))}", f"Online ({len(everyone)}): {', '.join(everyone)}"]
-        if session.following in self._players:
+        if self.following_enabled and session.following in self._players:
             lines.append(f"Following: {self._players[session.following].name}")
-        followers = sorted(
-            player.name for player in self._players.values() if player.following == token
-        )
+        followers = sorted(player.name for player in self._players.values()
+                           if self.following_enabled and player.following == token)
         if followers:
             lines.append(f"Followers: {', '.join(followers)}")
         return "\n".join(lines)

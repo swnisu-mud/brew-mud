@@ -8,7 +8,7 @@ def main() -> None:
     print(game.introduction())
     while game.running:
         try:
-            command = input("\nbrew> ")
+            command = input("\ncommand> ")
         except (EOFError, KeyboardInterrupt):
             print("\nYour brewery shift ends—for now.")
             break

@@ -7,12 +7,11 @@ This first playable build is based on the instructor's BBMB 1200 lecture materia
 - 70 connected rooms and seven compact regional maps
 - 85 NPCs, including brewery staff, enzymes, yeast, ions, proteins, and flavor molecules
 - 14 non-combat quests containing 72 objectives
-- several simultaneous active quests in each player's journal
+- one active quest at a time in a sequential, prerequisite-based quest line
 - 19 delayed, randomized pop quizzes about previously visited material
 - randomized answer positions, bare `A`/`B`/`C`/`D` answers, quiz pausing, review routes, and an incorrect-answer penalty
 - six progression ranks based on exploration, quests, and knowledge checks
-- browser-based multiplayer chat, presence, and player following
-- synchronized group quiz topics with separately shuffled answers for discussion
+- browser-based multiplayer presence and local room chat
 - first-arrival NPC chatter, colored semantic output, and quiz sound/screen flash
 
 ## Run it on this laptop
@@ -31,7 +30,7 @@ To let trusted devices on the same local network connect:
 python3 -m brewmud.web --host 0.0.0.0
 ```
 
-Allow TCP port 8000 through the computer's firewall if prompted, then share `http://YOUR-LAPTOP-IP:8000`. This development server does not provide accounts, TLS, durable server-side saves, or moderation and should not be exposed directly to the public internet.
+Allow TCP port 8000 through the computer's firewall if prompted, then share `http://YOUR-LAPTOP-IP:8000`. Local accounts are stored in `brewmud.db`, but this development server does not provide TLS or moderation and should not be exposed directly to the public internet.
 
 The solo terminal interface is also available:
 
@@ -39,7 +38,7 @@ The solo terminal interface is also available:
 python3 -m brewmud
 ```
 
-At the `brew>` prompt, begin with:
+At the `command>` prompt, begin with:
 
 ```text
 talk coordinator
@@ -50,9 +49,9 @@ map
 
 ## Commands
 
-`LOOK`, `TALK`, compass directions or `GO`, `JOURNAL`, `HINT`, `MAP`, `NOTES`, `STATUS`, `QUIZ`, `PAUSE`, `A`–`D`, and `QUIT` work in solo and browser play. Browser sessions also add `SAY`, `GROUP`, `WHO`, `FOLLOW`, and `UNFOLLOW`; the dedicated `group>` box sends ordinary text to the entire follow group without requiring a command. Account progress saves automatically. The solo terminal additionally supports file-based `SAVE` and `LOAD`.
+`LOOK`, `TALK`, compass directions or `GO`, `JOURNAL`, `HINT`, `MAP`, `NOTES`, `STATUS`, `QUIZ`, `PAUSE`, `A`–`D`, and `QUIT` work in solo and browser play. Browser sessions also add local `SAY` and `WHO`; account progress saves automatically. Following and private group chat are retained internally as an experimental mode but disabled in the student study-guide version. The solo terminal additionally supports file-based `SAVE` and `LOAD`.
 
-Quest NPCs announce problems in first-arrival dialogue. Talking to a quest giver starts the quest, and a player can keep several active objectives at once. `JOURNAL` records active and discovered work; `HINT` calculates a shortest route to every active objective.
+Quest NPCs announce problems in first-arrival dialogue. The assignments unlock sequentially, and each player can have only one active quest. `JOURNAL` records the current assignment and next available lead; `HINT` calculates a shortest route to the objective.
 
 ## Run the tests
 
@@ -79,7 +78,7 @@ On Windows PowerShell, activate the environment with `.venv\Scripts\Activate.ps1
 - `brewmud/quests.py` — data-driven quest definitions
 - `brewmud/quizzes.py` — knowledge checks and explanations
 - `brewmud/game.py` — commands and per-player state
-- `brewmud/server.py` — shared multiplayer presence, chat, and following
+- `brewmud/server.py` — shared multiplayer presence and chat, plus disabled experimental following code
 - `brewmud/static/` — browser interface
 - `tests/test_game.py` — content, engine, and multiplayer checks
 
@@ -106,4 +105,4 @@ The Render start command is `python -m brewmud.web --host 0.0.0.0`. The public b
 
 The Blueprint selects Render's smallest paid compute plan and attaches a 1 GB persistent disk at `/var/data`. Browser accounts are stored in `/var/data/brewmud.db` so they survive service restarts and deployments.
 
-Player presence, chat, and following remain in server memory, so a restart or redeploy disconnects current players. Account progress survives. Password reset, instructor controls, and moderation are not included in this first account version.
+Player presence and chat remain in server memory, so a restart or redeploy disconnects current players. Account progress survives. Password reset, instructor controls, and moderation are not included in this first account version.

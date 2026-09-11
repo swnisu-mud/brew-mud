@@ -52,7 +52,7 @@ class GameState:
 
     def to_dict(self) -> dict[str, object]:
         return {
-            "version": 2, "room": self.room,
+            "version": 3, "room": self.room,
             "inventory": sorted(self.inventory), "taken_items": sorted(self.taken_items),
             "discovered_rooms": sorted(self.discovered_rooms),
             "learned_facts": sorted(self.learned_facts),
@@ -68,13 +68,22 @@ class GameState:
 
     @classmethod
     def from_dict(cls, data: dict[str, object]) -> "GameState":
+        version = int(data.get("version", 1))
+        quest_stages = {str(k): int(v) for k, v in dict(data.get("quest_stages", {})).items()}
+        # Version 3 replaced the broad department tour with a malting/mashing
+        # orientation while retaining seven steps. Map old progress forward so
+        # returning players do not replay every introduction.
+        if version < 3 and "orientation" in quest_stages:
+            quest_stages["orientation"] = {0: 0, 1: 2, 2: 5}.get(
+                quest_stages["orientation"], 6
+            )
         return cls(
             room=str(data.get("room", "brewery_gate")),
             inventory=set(data.get("inventory", [])),
             taken_items=set(data.get("taken_items", [])),
             discovered_rooms=set(data.get("discovered_rooms", [])),
             learned_facts=set(data.get("learned_facts", [])),
-            quest_stages={str(k): int(v) for k, v in dict(data.get("quest_stages", {})).items()},
+            quest_stages=quest_stages,
             completed_quests=set(data.get("completed_quests", [])),
             companion=data.get("companion") if isinstance(data.get("companion"), str) else None,
             insight=int(data.get("insight", 0)),

@@ -25,6 +25,15 @@ class Account:
     state: GameState
 
 
+@dataclass(frozen=True)
+class AccountProgress:
+    id: int
+    name: str
+    state: GameState
+    created_at: str
+    updated_at: str
+
+
 class AccountStore:
     def __init__(self, database_path: str | Path) -> None:
         path = str(database_path)
@@ -103,6 +112,24 @@ class AccountStore:
             )
             if cursor.rowcount != 1:
                 raise KeyError("Account no longer exists.")
+
+    def list_progress(self) -> list[AccountProgress]:
+        with self._lock:
+            rows = self._connection.execute(
+                "SELECT id, name, state_json, created_at, updated_at "
+                "FROM accounts ORDER BY name_key"
+            ).fetchall()
+        progress = []
+        for row in rows:
+            state = GameState.from_dict(json.loads(str(row["state_json"])))
+            progress.append(AccountProgress(
+                id=int(row["id"]),
+                name=str(row["name"]),
+                state=state,
+                created_at=str(row["created_at"]),
+                updated_at=str(row["updated_at"]),
+            ))
+        return progress
 
     def close(self) -> None:
         with self._lock:

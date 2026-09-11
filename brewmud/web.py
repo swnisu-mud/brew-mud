@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hmac
 import json
 import os
 from http import HTTPStatus
@@ -18,12 +19,17 @@ def default_bind_host() -> str:
     return os.environ.get("HOST", "0.0.0.0" if "PORT" in os.environ else "127.0.0.1")
 
 
+def instructor_password_matches(provided: str, configured: str) -> bool:
+    return bool(configured) and hmac.compare_digest(provided, configured)
+
+
 class BrewMUDHTTPServer(ThreadingHTTPServer):
     daemon_threads = True
 
     def __init__(self, server_address, handler_class=BaseHTTPRequestHandler):
         super().__init__(server_address, handler_class)
         self.world = MUDServer(os.environ.get("BREWMUD_DB_PATH", "brewmud.db"))
+        self.instructor_password = os.environ.get("BREWMUD_ADMIN_PASSWORD", "")
 
     def server_close(self) -> None:
         self.world.close()
@@ -52,11 +58,20 @@ class RequestHandler(BaseHTTPRequestHandler):
         if parsed.path == "/":
             self._send_file(STATIC_DIR / "index.html", "text/html; charset=utf-8")
             return
+        if parsed.path == "/instructor":
+            self._send_file(STATIC_DIR / "instructor.html", "text/html; charset=utf-8")
+            return
         if parsed.path == "/app.js":
             self._send_file(STATIC_DIR / "app.js", "text/javascript; charset=utf-8")
             return
         if parsed.path == "/style.css":
             self._send_file(STATIC_DIR / "style.css", "text/css; charset=utf-8")
+            return
+        if parsed.path == "/instructor.js":
+            self._send_file(STATIC_DIR / "instructor.js", "text/javascript; charset=utf-8")
+            return
+        if parsed.path == "/instructor.css":
+            self._send_file(STATIC_DIR / "instructor.css", "text/css; charset=utf-8")
             return
         if parsed.path == "/api/events":
             token = parse_qs(parsed.query).get("token", [""])[0]
@@ -82,7 +97,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                 token, output = self.server.world.login(
                     str(body.get("name", "")), str(body.get("password", ""))
                 )
-                self._json({"token": token, "output": output, "show_instructions": False})
+                self._json({"token": token, "output": output, "show_instructions": False,
+                            "awaiting_continue": self.server.world.awaiting_continue(token)})
             except ValueError as exc:
                 self._json({"error": str(exc)}, HTTPStatus.BAD_REQUEST)
             return
@@ -91,14 +107,18 @@ class RequestHandler(BaseHTTPRequestHandler):
                 token, output = self.server.world.register(
                     str(body.get("name", "")), str(body.get("password", ""))
                 )
-                self._json({"token": token, "output": output, "show_instructions": True}, HTTPStatus.CREATED)
+                self._json({"token": token, "output": output, "show_instructions": True,
+                            "awaiting_continue": self.server.world.awaiting_continue(token)},
+                           HTTPStatus.CREATED)
             except ValueError as exc:
                 self._json({"error": str(exc)}, HTTPStatus.BAD_REQUEST)
             return
         if self.path == "/api/command":
             try:
                 output = self.server.world.command(str(body.get("token", "")), str(body.get("command", "")))
-                self._json({"output": output})
+                token = str(body.get("token", ""))
+                self._json({"output": output,
+                            "awaiting_continue": self.server.world.awaiting_continue(token)})
             except KeyError as exc:
                 self._json({"error": str(exc)}, HTTPStatus.UNAUTHORIZED)
             return
@@ -108,6 +128,20 @@ class RequestHandler(BaseHTTPRequestHandler):
                 self._json({"ok": True})
             except KeyError:
                 self._json({"ok": True})
+            return
+        if self.path == "/api/instructor/progress":
+            if not self.server.instructor_password:
+                self._json(
+                    {"error": "Instructor tracking is not configured."},
+                    HTTPStatus.SERVICE_UNAVAILABLE,
+                )
+                return
+            if not instructor_password_matches(
+                str(body.get("password", "")), self.server.instructor_password
+            ):
+                self._json({"error": "Incorrect instructor password."}, HTTPStatus.UNAUTHORIZED)
+                return
+            self._json({"players": self.server.world.instructor_progress()})
             return
         self._json({"error": "Not found"}, HTTPStatus.NOT_FOUND)
 

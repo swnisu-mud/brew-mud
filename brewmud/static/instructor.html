@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>BrewMUD Instructor Progress</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/instructor.css">
+</head>
+<body>
+  <main class="shell instructor-shell">
+    <header>
+      <div>
+        <p class="eyebrow">Read-only course tracking</p>
+        <h1>Brew<span>MUD</span></h1>
+      </div>
+      <a href="/" class="game-link">Return to game</a>
+    </header>
+
+    <section id="instructor-login" class="instructor-panel">
+      <h2>Instructor progress</h2>
+      <p>Enter the instructor password configured in Render. This page shows the same progression students see with <code>LEVEL</code>.</p>
+      <form id="instructor-login-form" class="instructor-login-form">
+        <label for="instructor-password">Instructor password</label>
+        <input id="instructor-password" type="password" autocomplete="current-password" required autofocus>
+        <button type="submit">View progress</button>
+      </form>
+      <p id="instructor-error" class="error" role="alert"></p>
+    </section>
+
+    <section id="progress-panel" class="instructor-panel" hidden>
+      <div class="progress-heading">
+        <div>
+          <h2>Student progress</h2>
+          <p id="progress-summary" class="progress-summary"></p>
+        </div>
+        <button id="refresh-progress" type="button">Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Account</th>
+              <th>Rank</th>
+              <th>Insight</th>
+              <th>Locations</th>
+              <th>Quests</th>
+              <th>Knowledge checks</th>
+              <th>Next rank</th>
+              <th>Last active</th>
+            </tr>
+          </thead>
+          <tbody id="progress-rows"></tbody>
+        </table>
+      </div>
+      <p class="privacy-note">Account names are player-chosen. Ask students to tell you which account belongs to them.</p>
+    </section>
+  </main>
+  <script src="/instructor.js"></script>
+</body>
+</html>

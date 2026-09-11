@@ -3,6 +3,7 @@ let pollTimer = null;
 let audioContext = null;
 let soundEnabled = true;
 let pendingWelcome = "";
+let awaitingQuizContinue = false;
 const terminal = document.querySelector("#terminal");
 const commandInput = document.querySelector("#command");
 
@@ -145,6 +146,7 @@ document.querySelector("#login-form").addEventListener("submit", async (event) =
     });
     token = data.token;
     pendingWelcome = data.output;
+    awaitingQuizContinue = Boolean(data.awaiting_continue);
     document.querySelector("#login").hidden = true;
     document.querySelector("#status").textContent = "connected";
     if (data.show_instructions) {
@@ -173,7 +175,27 @@ document.querySelector("#command-form").addEventListener("submit", async (event)
       body: JSON.stringify({token, command}),
     });
     append(data.output);
+    awaitingQuizContinue = Boolean(data.awaiting_continue);
   } catch (err) {
+    append(err.message, "error");
+  }
+});
+
+document.addEventListener("keydown", async (event) => {
+  if (!awaitingQuizContinue || !token || event.ctrlKey || event.altKey || event.metaKey) return;
+  event.preventDefault();
+  awaitingQuizContinue = false;
+  commandInput.value = "";
+  try {
+    const data = await api("/api/command", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({token, command: "continue"}),
+    });
+    append(data.output);
+    awaitingQuizContinue = Boolean(data.awaiting_continue);
+  } catch (err) {
+    awaitingQuizContinue = true;
     append(err.message, "error");
   }
 });

@@ -261,12 +261,47 @@ NPC_DESCRIPTIONS = {
 }
 
 
-_npc_home = {npc: room for room, residents in PLACEMENTS.items() for npc in residents}
-_room_fact = {room: fact for room, _name, _feature, fact in ROOM_DATA}
+# Spoken observations are deliberately different from both room summaries and
+# LOOK descriptions. The first study unit receives fully authored dialogue;
+# later residents use an educational fallback until their course unit is tuned.
+NPC_DIALOGUE = {
+    "training_coordinator": "Start with the grain. If you can explain what changes inside a kernel, the choices made later in the mash will make much more sense.",
+    "barley_inspector": "I sample kernels from several parts of the load; one convenient handful can hide differences in moisture, protein, size, and germination capacity.",
+    "two_row_kernel": "My embryo is alive, my endosperm stores starch and protein, and my aleurone will help mobilize those reserves when germination begins.",
+    "steep_master": "Water wakes the kernel, but continuous submersion can starve it of oxygen. That is why I alternate wet steeps with air rests.",
+    "oxygen_sensor": "A declining oxygen reading is metabolic evidence: these kernels are respiring, and they need drainage and aeration before oxygen becomes limiting.",
+    "gibberellic_acid": "I carry the embryo's signal to the aleurone; I do not digest starch myself, but I trigger cells that produce the required hydrolases.",
+    "aleurone_cell": "When gibberellin reaches me, I increase synthesis and secretion of alpha-amylase, proteases, and enzymes that open the endosperm matrix.",
+    "starch_granule": "My glucose is densely packed as amylose and amylopectin. Modification and later gelatinization determine how easily amylases can reach it.",
+    "kiln_operator": "I dry gently at first to preserve enzyme activity, then use the curing schedule to develop the malt's intended color and flavor.",
+    "head_maltster": "Good malt is not simply germinated grain. I stop growth when modification is sufficient, before the embryo consumes too much extract.",
+    "water_chemist": "Do not confuse starting-water pH with alkalinity. The grist reacts with the water, and that combined chemistry determines mash pH.",
+    "ph_meter": "Cool and mix the sample before trusting me. Temperature, calibration, and poor sampling can turn a precise-looking number into a bad decision.",
+    "bicarbonate": "I consume added acid and resist a pH decrease. That buffering behavior is why my concentration matters more than a casual hard-water label.",
+    "calcium_ion": "I can promote phosphate reactions that lower mash pH, support yeast and flocculation later, and help stabilize alpha-amylase during heating.",
+    "sulfate_ion": "I can sharpen the impression of hop bitterness and dryness, but I do not create bitterness by myself and too much may taste harsh.",
+    "chloride_ion": "Brewers use me to support fullness and malt emphasis. Think of sulfate-to-chloride balance as a sensory tool, not a rigid recipe law.",
+    "burton_guide": "Historic water profiles explain adaptations, not commandments. Modern treatment lets a brewer choose chemistry for the beer rather than imitate a city blindly.",
+    "treatment_chemist": "Name the problem before choosing the treatment: carbon, acid, salts, dechlorination, and reverse osmosis solve different chemical problems.",
+    "miller": "I want fractured endosperm and recognizable husk pieces. Intact kernels hide extract, while excessive flour can make lautering painfully slow.",
+    "head_brewer": "Mash temperature is a choice about enzyme survival and product distribution, not merely a number to hit on the thermometer.",
+    "protease": "At a suitable lower-temperature rest I release peptides and amino nitrogen, but an unnecessary or excessive rest can weaken foam-supporting proteins.",
+    "beta_amylase": "Give me accessible nonreducing chain ends and moderate heat, and I release maltose repeatedly until a branch or damaged activity stops me.",
+    "alpha_amylase": "I cut alpha-1,4 bonds within starch chains. Those internal cleavages reduce viscosity and create additional ends for other enzymes to use.",
+    "gelatinized_starch": "Heat and water disrupted my ordered granule, so flexible glucan chains are now exposed. Gelatinization enables access; it is not itself hydrolysis.",
+    "mash_out_operator": "I raise the temperature after the desired fermentability is established, reducing viscosity while largely freezing the enzyme balance in place.",
+    "lauter_operator": "The false bottom supports the grain, but the husk bed performs most of the filtration. Flow too aggressively and that bed compacts.",
+    "husk_keeper": "My overlapping pieces preserve channels through the bed. Pulverize me in the mill and flour will occupy the spaces wort needs for runoff.",
+    "sparge_technician": "I rinse retained extract gently and evenly. Excess heat, high pH, or too much sparge water can extract compounds the brewer did not want.",
+    "vorlauf_guide": "The first runnings carry particles, so I return them above the bed. Clarity improves as the grain establishes its own filter structure.",
+}
 
 
 def npc_dialogue(key: str, name: str) -> str:
-    return f'“{_room_fact[_npc_home[key]].rstrip(".")},” says {name}.'
+    dialogue = NPC_DIALOGUE.get(key)
+    if dialogue:
+        return f'“{dialogue.rstrip(".")},” says {name}.'
+    return f'{name} adds a technical observation: “{NPC_DESCRIPTIONS[key]}”'
 
 
 NPCS = {

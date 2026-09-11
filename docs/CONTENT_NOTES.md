@@ -9,3 +9,4 @@ The world is educationally simplified but avoids several common misleading short
 Quest actions are fictionalized for play—enzymes and small molecules speak and may be escorted—but their biochemical explanations and process relationships are intended to remain accurate to the course material.
 
 Browser accounts store a display name, a salted PBKDF2 password hash, and serialized game progress. The application does not request email addresses or real student names.
+The password-protected instructor page can display account names, aggregate progression, and last-activity times. It does not display password data or player chat. Students must tell the instructor which player-chosen account name is theirs if progress is used for extra credit.

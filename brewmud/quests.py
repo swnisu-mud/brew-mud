@@ -35,12 +35,12 @@ def E(target: str, destination: str, objective: str, result: str) -> Step:
 QUESTS: dict[str, Quest] = {
     "orientation": Quest("First Day in the Brewery", "training_coordinator",
         "“A brewery is a linked biochemical system, not just a row of tanks. For your first assignment, trace grain from malting through mash separation,” says the Training Coordinator.", (
-        T("head_maltster", "Find and meet the Head Maltster.", "Malting makes stored reserves accessible while preserving useful enzymes."),
-        T("barley_inspector", "Find the Barley Inspector and examine the starting grain.", "Kernel uniformity influences the consistency of hydration, germination, and modification."),
-        T("water_chemist", "Find the Water Chemist and ask how water affects mashing.", "Water establishes the chemical environment for mash enzymes and extraction."),
-        T("miller", "Find the Miller and ask how the crush exposes endosperm.", "Milling exposes starch while preserving husks that later support filtration."),
-        T("head_brewer", "Find the Head Brewer and ask how mash conditions control fermentability.", "Mash temperature and pH shift the balance of alpha- and beta-amylase activity."),
-        T("lauter_operator", "Find the Lauter Operator and ask how sweet wort is separated.", "Lautering separates sweet wort from spent grain through a permeable husk bed."),
+        T("head_maltster", "Find and meet the Head Maltster.", "“Ah, you found me! Welcome to the maltings. Before I can judge this batch, I need to know whether the incoming grain was uniform. Find the Barley Inspector and ask what varied across the load,” says the Head Maltster."),
+        T("barley_inspector", "Find the Barley Inspector and ask what varied across the incoming grain.", "“I sampled across the load, not just from the top. Kernel size and moisture were consistent enough for even steeping. Next, ask the Water Chemist what chemical environment those kernels and their enzymes will encounter,” says the Barley Inspector."),
+        T("water_chemist", "Find the Water Chemist and ask how water affects mashing.", "“The grist and water react together to establish mash pH. Once that environment is understood, the grain still needs physical access—ask the Miller how the crush exposes endosperm without destroying the husks,” says the Water Chemist."),
+        T("miller", "Find the Miller and ask how the crush exposes endosperm.", "“The rollers opened the endosperm but left useful husk pieces. The Head Brewer can now explain how temperature and pH turn that access into a particular balance of sugars and dextrins,” says the Miller."),
+        T("head_brewer", "Find the Head Brewer and ask how mash conditions control fermentability.", "“Mash conditions shift which enzymes survive and which products accumulate. When conversion is complete, the Lauter Operator must separate that dissolved extract from the grain bed,” says the Head Brewer."),
+        T("lauter_operator", "Find the Lauter Operator and ask how sweet wort is separated.", "“The husk-supported bed retains solids while sweet wort passes through. You have now traced grain from raw material to separated wort; take that process framework back to the Training Coordinator,” says the Lauter Operator."),
         T("training_coordinator", "Return to the Training Coordinator.", "“Good. You have the process framework; now investigate each biochemical problem in sequence.”")), 30),
 
     "malt_house": Quest("Wake the Sleeping Grain", "head_maltster",

@@ -14,7 +14,7 @@ from brewmud.quests import QUESTS
 from brewmud.quizzes import QUIZZES
 from brewmud.regional_maps import REGIONAL_MAPS, ROOM_REGION
 from brewmud.server import MUDServer
-from brewmud.world import NPC_DESCRIPTIONS, NPCS, ROOMS
+from brewmud.world import NPC_DESCRIPTIONS, NPC_DIALOGUE, NPCS, ROOMS
 
 
 def npc_room(npc: str) -> str:
@@ -62,6 +62,12 @@ class WorldTests(unittest.TestCase):
         for key, npc in NPCS.items():
             self.assertNotIn("occupied with", npc.description, key)
             self.assertGreater(len(npc.description), 60, key)
+
+    def test_npc_dialogue_does_not_repeat_the_room_description(self):
+        for room in ROOMS.values():
+            for key in room.npcs:
+                self.assertNotIn(room.description, NPCS[key].dialogue, key)
+        self.assertIn("several parts of the load", NPC_DIALOGUE["barley_inspector"])
 
     def test_each_quest_can_be_played_to_completion(self):
         for key, quest in QUESTS.items():
@@ -156,6 +162,14 @@ class CommandTests(unittest.TestCase):
         self.assertIn("Objectives: Find and meet the Head Maltster.", room)
         self.assertNotIn("First Day in the Brewery:", room)
 
+    def test_head_maltster_welcomes_player_and_explains_next_step(self):
+        self.game.talk("coordinator")
+        self.game.state.room = "cure_floor"
+        response = self.game.talk("head maltster")
+        self.assertIn("you found me", response)
+        self.assertIn("incoming grain was uniform", response)
+        self.assertIn("Find the Barley Inspector", response)
+
     def test_room_tracker_is_compact_when_many_quests_are_active(self):
         keys = list(QUESTS)[:5]
         self.game.state.quest_stages = {key: 0 for key in keys}
@@ -215,8 +229,9 @@ class QuizTests(unittest.TestCase):
         displayed = game.state.quiz_option_order.index(QUIZZES["kiln"].correct)
         response = game.answer(chr(65 + displayed))
         self.assertIn("CONTINUE", response)
+        self.assertIn("Press any key to continue", response)
         self.assertNotIn("SECRET ROOM DESCRIPTION", response)
-        self.assertIn("SECRET ROOM DESCRIPTION", game.execute("c"))
+        self.assertIn("SECRET ROOM DESCRIPTION", game.execute("any-key"))
 
     def test_candidates_require_prior_visit_not_current_room(self):
         game = Game(pop_quizzes_enabled=True)
@@ -276,6 +291,21 @@ class MultiplayerTests(unittest.TestCase):
         server.command(alice, "talk coordinator")
         self.assertIn("orientation", server._players[alice].game.state.quest_stages)
         self.assertNotIn("orientation", server._players[bob].game.state.quest_stages)
+
+    def test_instructor_progress_matches_player_level(self):
+        server = MUDServer(":memory:")
+        self.addCleanup(server.close)
+        token, _ = server.register("Alice", "barley-123")
+        server.command(token, "talk coordinator")
+        expected = server._players[token].game.progression_data()
+
+        report = server.instructor_progress()
+
+        self.assertEqual(len(report), 1)
+        self.assertEqual(report[0]["name"], "Alice")
+        self.assertTrue(report[0]["online"])
+        for field in ("rank", "insight", "locations", "quests", "knowledge_checks", "next_rank"):
+            self.assertEqual(report[0][field], expected[field])
 
     def test_account_progress_survives_logout_and_login(self):
         server = MUDServer(":memory:")
@@ -372,6 +402,9 @@ class AccountStoreTests(unittest.TestCase):
         account.state.insight = 47
         store.save(account.id, account.state)
         self.assertEqual(store.authenticate("cellar student", "not-plain-text").state.insight, 47)
+        report = store.list_progress()
+        self.assertEqual(report[0].name, "Cellar Student")
+        self.assertEqual(report[0].state.insight, 47)
 
     def test_short_password_is_rejected(self):
         store = AccountStore(":memory:")
@@ -394,6 +427,15 @@ class AssetTests(unittest.TestCase):
         self.assertNotIn('id="group-form"', instructions)
         self.assertLess(instructions.index("Create new account"), instructions.index("Log in</button>"))
 
+    def test_instructor_dashboard_assets(self):
+        static = Path(__file__).parents[1] / "brewmud" / "static"
+        page = (static / "instructor.html").read_text()
+        script = (static / "instructor.js").read_text()
+        self.assertIn("Instructor progress", page)
+        self.assertIn("Knowledge checks", page)
+        self.assertIn("/api/instructor/progress", script)
+        self.assertNotIn("localStorage", script)
+
     def test_render_blueprint_uses_web_service_and_health_check(self):
         blueprint = (Path(__file__).parents[1] / "render.yaml").read_text()
         self.assertIn("type: web", blueprint)
@@ -401,6 +443,7 @@ class AssetTests(unittest.TestCase):
         self.assertIn("healthCheckPath: /api/status", blueprint)
         self.assertIn("mountPath: /var/data", blueprint)
         self.assertIn("BREWMUD_DB_PATH", blueprint)
+        self.assertIn("BREWMUD_ADMIN_PASSWORD", blueprint)
 
     def test_render_port_environment_selects_public_bind_default(self):
         from brewmud import web
@@ -408,6 +451,12 @@ class AssetTests(unittest.TestCase):
             self.assertEqual(web.default_bind_host(), "0.0.0.0")
         with patch.dict("os.environ", {}, clear=True):
             self.assertEqual(web.default_bind_host(), "127.0.0.1")
+
+    def test_instructor_password_requires_a_configured_exact_match(self):
+        from brewmud.web import instructor_password_matches
+        self.assertTrue(instructor_password_matches("secret phrase", "secret phrase"))
+        self.assertFalse(instructor_password_matches("wrong", "secret phrase"))
+        self.assertFalse(instructor_password_matches("", ""))
 
 
 if __name__ == "__main__":

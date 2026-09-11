@@ -105,4 +105,8 @@ The Render start command is `python -m brewmud.web --host 0.0.0.0`. The public b
 
 The Blueprint selects Render's smallest paid compute plan and attaches a 1 GB persistent disk at `/var/data`. Browser accounts are stored in `/var/data/brewmud.db` so they survive service restarts and deployments.
 
-Player presence and chat remain in server memory, so a restart or redeploy disconnects current players. Account progress survives. Password reset, instructor controls, and moderation are not included in this first account version.
+### Instructor progress
+
+Set `BREWMUD_ADMIN_PASSWORD` to a strong, unique value in the Render service's **Environment** page. Then visit `/instructor` on the deployed BrewMUD site and enter that password. The read-only dashboard shows each account's rank, Insight, locations explored, quests completed, knowledge checks completed, next rank, and last activity. It refreshes every 30 seconds while open. Students should report their player-chosen account names if the dashboard will be used for extra credit.
+
+Player presence and chat remain in server memory, so a restart or redeploy disconnects current players. Account progress survives. Password reset and moderation are not included in this first account version.

@@ -109,11 +109,7 @@ class Game:
         verb, args = parts[0], parts[1:]
         if self.awaiting_quiz_continue:
             self.state.turns += 1
-            if len(parts) == 1 and verb in {"c","continue"}:
-                return self._reveal_pending_room()
-            if verb == "help":
-                return self.help() + "\n\nCONTINUE — Press C to reveal the room."
-            return "The quiz explanation is still on screen. Press C to continue into the room."
+            return self._reveal_pending_room()
         if self.state.active_quiz and len(parts) == 1 and verb in {"a","b","c","d"}:
             self.state.turns += 1
             return self.answer(verb)
@@ -305,13 +301,35 @@ class Game:
     def rank(self) -> str:
         return next(title for threshold, title in reversed(RANKS) if self.state.insight >= threshold)
 
+    def progression_data(self) -> dict[str, object]:
+        nxt = next(((n, title) for n, title in RANKS if n > self.state.insight), None)
+        return {
+            "rank": self.rank,
+            "insight": self.state.insight,
+            "locations": len(self.state.discovered_rooms),
+            "locations_total": len(ROOMS),
+            "quests": len(self.state.completed_quests),
+            "quests_total": len(QUESTS),
+            "knowledge_checks": len(self.state.completed_quizzes),
+            "knowledge_checks_total": len(QUIZZES),
+            "next_rank": (
+                f"{nxt[1]} at {nxt[0]} Insight ({nxt[0] - self.state.insight} needed)"
+                if nxt else "Highest current rank achieved"
+            ),
+        }
+
     def progression(self) -> str:
-        nxt = next(((n,t) for n,t in RANKS if n > self.state.insight), None)
-        next_text = f"Next rank: {nxt[1]} at {nxt[0]} Insight ({nxt[0]-self.state.insight} needed)." if nxt else "Highest current rank achieved."
-        return (f"PROGRESSION\nRank: {self.rank}\nInsight: {self.state.insight}\n"
-                f"Locations: {len(self.state.discovered_rooms)}/{len(ROOMS)}\n"
-                f"Quests: {len(self.state.completed_quests)}/{len(QUESTS)}\n"
-                f"Knowledge checks: {len(self.state.completed_quizzes)}/{len(QUIZZES)}\n{next_text}")
+        data = self.progression_data()
+        next_text = data["next_rank"]
+        if next_text != "Highest current rank achieved":
+            next_text = f"Next rank: {next_text}."
+        else:
+            next_text += "."
+        return (f"PROGRESSION\nRank: {data['rank']}\nInsight: {data['insight']}\n"
+                f"Locations: {data['locations']}/{data['locations_total']}\n"
+                f"Quests: {data['quests']}/{data['quests_total']}\n"
+                f"Knowledge checks: {data['knowledge_checks']}/{data['knowledge_checks_total']}\n"
+                f"{next_text}")
 
     def quiz(self) -> str:
         key = self.state.active_quiz
@@ -375,7 +393,8 @@ class Game:
         self.state.active_quiz = self.state.paused_quiz = None
         self.state.quiz_option_order = []
         response = f"Correct. {question.explanation}" + self._award_insight(10)
-        if self.state.pending_room_description is not None: response += "\n\nCONTINUE — Press C to reveal the room."
+        if self.state.pending_room_description is not None:
+            response += "\n\nCONTINUE — Press any key to continue."
         return response
 
     def _quiz_order(self, question) -> list[int]:

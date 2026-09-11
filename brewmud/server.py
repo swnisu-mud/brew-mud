@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 import secrets
 import threading
+from copy import deepcopy
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -120,7 +121,7 @@ class MUDServer:
                         "\n  UNFOLLOW            Stop following"
                     )
                 if session.game.awaiting_quiz_continue:
-                    response += "\n\nCONTINUE — Press C to reveal the room."
+                    response += "\n\nCONTINUE — Press any key to continue."
                 return response
 
             if (
@@ -162,6 +163,28 @@ class MUDServer:
     def player_count(self) -> int:
         with self._lock:
             return len(self._players)
+
+    def awaiting_continue(self, token: str) -> bool:
+        with self._lock:
+            session = self._players.get(token)
+            return bool(session and session.game.awaiting_quiz_continue)
+
+    def instructor_progress(self) -> list[dict[str, object]]:
+        """Return the same progression fields players see with LEVEL."""
+        with self._lock:
+            live_states = {session.account_id: session.game.state
+                           for session in self._players.values()}
+            report = []
+            for account in self._accounts.list_progress():
+                state = deepcopy(live_states.get(account.id, account.state))
+                row = Game(state=state, pop_quizzes_enabled=False).progression_data()
+                row.update({
+                    "name": account.name,
+                    "updated_at": account.updated_at,
+                    "online": account.id in live_states,
+                })
+                report.append(row)
+            return report
 
     def close(self) -> None:
         with self._lock:

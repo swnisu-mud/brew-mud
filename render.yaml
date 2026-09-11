@@ -9,6 +9,8 @@ services:
     envVars:
       - key: BREWMUD_DB_PATH
         value: /var/data/brewmud.db
+      - key: BREWMUD_ADMIN_PASSWORD
+        sync: false
     disk:
       name: brewmud-data
       mountPath: /var/data

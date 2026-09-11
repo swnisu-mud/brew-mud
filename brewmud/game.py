@@ -192,7 +192,8 @@ class Game:
                     if self.state.companion and self.state.companion != key:
                         return f"You are already escorting {NPCS[self.state.companion].name}. Finish that delivery first."
                     self.state.companion = key
-                    return (f'“Lead the way,” says {NPCS[key].name}.\n\n'
+                    response = step.start_result or f'“Lead the way,” says {NPCS[key].name}.'
+                    return (f'{response}\n\n'
                             f"OBJECTIVE UPDATED — Escort {NPCS[key].name} to {NPCS[step.destination].name}.")
                 if key == step.destination and self.state.companion == step.target:
                     self.state.companion = None

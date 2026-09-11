@@ -57,6 +57,19 @@ class WorldTests(unittest.TestCase):
                 self.assertIn(target, NPCS)
                 self.assertIn(target, placed)
 
+    def test_quest_responses_are_substantive_conversations(self):
+        for quest_key, quest in QUESTS.items():
+            for step_number, step in enumerate(quest.steps, 1):
+                label = f"{quest_key} step {step_number}: {step.target}"
+                self.assertGreaterEqual(len(step.result), 120, label)
+                self.assertIn("“", step.result, label)
+                self.assertIn("”", step.result, label)
+                if step.action == "escort":
+                    self.assertIsNotNone(step.start_result, label)
+                    self.assertGreaterEqual(len(step.start_result or ""), 120, label)
+                    self.assertIn("“", step.start_result or "", label)
+                    self.assertIn("”", step.start_result or "", label)
+
     def test_every_npc_has_a_specific_educational_description(self):
         self.assertEqual(set(NPCS), set(NPC_DESCRIPTIONS))
         for key, npc in NPCS.items():

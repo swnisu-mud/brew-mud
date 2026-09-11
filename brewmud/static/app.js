@@ -91,7 +91,14 @@ function classifyLine(line, index, roomTitleIndex) {
 }
 
 function appendHighlights(row, line) {
-  const highlightPattern = /<[A-Z0-9]{3,4}>|\b(north|south|east|west|up|down|in|out)\b/gi;
+  const trimmed = line.trimStart();
+  const navigationLine = trimmed.startsWith("Exits:")
+    || trimmed.startsWith("Local routes:")
+    || trimmed.startsWith("Regional Transitions:")
+    || trimmed.includes("Shortest route to ");
+  const highlightPattern = navigationLine
+    ? /<[A-Z0-9]{3,4}>|\b(north|south|east|west|up|down|in|out)\b/gi
+    : /<[A-Z0-9]{3,4}>/g;
   let cursor = 0;
   for (const match of line.matchAll(highlightPattern)) {
     row.appendChild(document.createTextNode(line.slice(cursor, match.index)));

@@ -35,11 +35,15 @@ REGIONAL_MAPS = {
  "mash": RegionalMap("WATER AND MASH", ((('WAT','water_lab'),('PHB','ph_bench'),('ION','ion_gallery'),('CTY','city_profiles')),
                                             (('TRT','treatment_bay'),('MIL','mill_room'),('MSH','mash_tun'),('PRO','protein_rest')),
                                             (('BET','beta_rest'),('ALP','alpha_rest'),('CNV','conversion_bench'),('OUT','mash_out'))),
-                     "WAT leads UP to Germination; MSH leads IN to the Carbohydrate Lab; CNV leads IN to the Gelatinization Chamber; OUT leads DOWN to the Lauter Tun."),
+                     "WAT leads UP to Germination; MSH leads IN to the Carbohydrate Lab; PRO leads IN to the Protein and Enzyme Lab; BET and ALP lead IN from the Enzyme Lab; CNV leads IN to the Gelatinization Chamber; OUT leads DOWN to the Lauter Tun."),
  "starch": RegionalMap("CARBOHYDRATE AND STARCH LAB",
                        ((('CAR','carbohydrate_lab'),('GLU','glucose_bench'),('DIS','disaccharide_gallery'),('POL','polymer_comparison')),
-                        (('GEL','gelatinization_chamber'),('CRY','crystallinity_lab'),('AMY','amylose_helix'),('AMP','amylopectin_arbor'))),
+                       (('GEL','gelatinization_chamber'),('CRY','crystallinity_lab'),('AMY','amylose_helix'),('AMP','amylopectin_arbor'))),
                        "CAR leads OUT to the Mash Tun; GEL leads OUT to the Starch Conversion Bench."),
+ "enzyme": RegionalMap("PROTEIN AND ENZYME LAB",
+                        ((('AAG','amino_acid_gallery'),('PEP','peptide_bond_bench'),('STR','protein_structure_gallery'),('FOL','folding_chamber'),('DEN','denaturation_bay'),('CAT','enzyme_catalysis_lab')),
+                         (('ACT','active_site_workshop'),('OPT','enzyme_conditions_lab'),('AMZ','amylase_mechanism_lab'),('THK','mash_thickness_station'),('AUX','accessory_enzyme_lab'),('IOD','iodine_test_alcove'))),
+                        "AAG leads OUT to the Protein Rest; AMZ leads OUT to the Beta-Amylase Rest; IOD leads OUT to the Alpha-Amylase Rest."),
  "brew": RegionalMap("BREWHOUSE", ((('LAU','lauter_tun'),('BED','grain_bed'),('SPA','sparge_arm'),('GRA','wort_grant'),('KET','kettle')),
                                           (('BRK','hot_break'),('HOP','hop_dosing'),('WHL','whirlpool'),('HEX','heat_exchanger'),('OXY','oxygenation_station'))),
                      "LAU leads UP to Mash-Out; HOP leads IN to the Hop Lab; OXY leads DOWN to Fermentation."),
@@ -59,6 +63,7 @@ REGIONAL_MAPS = {
 
 ALIASES = {"malting":"malt","maltings":"malt","malt":"malt", "water":"mash","mash":"mash",
            "starch":"starch","carbohydrate":"starch","carbohydrates":"starch","sugar":"starch",
+           "enzyme":"enzyme","enzymes":"enzyme","protein":"enzyme","proteins":"enzyme","amylase":"enzyme",
            "brewhouse":"brew","brew":"brew", "fermentation":"ferment","cellar":"ferment","ferment":"ferment",
            "hop":"hops","hops":"hops", "packaging":"pack","sensory":"pack","pack":"pack",
            "quality":"quality","qa":"quality","training":"quality"}
@@ -67,7 +72,8 @@ ROOM_REGION = {room: region for region,m in REGIONAL_MAPS.items() for room in m.
 
 def map_index() -> str:
     return ("BREWMUD REGIONAL MAPS\n  MAP MALT       Maltings\n  MAP MASH       Water and mash chemistry\n"
-            "  MAP STARCH     Carbohydrate and starch lab\n  MAP BREW       Brewhouse\n"
+            "  MAP STARCH     Carbohydrate and starch lab\n  MAP ENZYME     Protein and enzyme lab\n"
+            "  MAP BREW       Brewhouse\n"
             "  MAP FERMENT    Fermentation cellar\n  MAP HOPS       Hop yard and flavor lab\n"
             "  MAP PACK       Packaging and sensory\n  MAP QUALITY    Quality and training")
 

@@ -2,7 +2,7 @@
 
 ## A study guide you can explore
 
-BrewMUD is a substitute for a typical study guide for our material on malting, mashing, and lautering. It is intended to be helpful and, hopefully, somewhat fun—or at least not boring. Instead of reading a list of review questions, you will explore a brewery, speak with its residents, and solve biochemical and brewing problems.
+BrewMUD is a substitute for a typical study guide for our material on malting, carbohydrate and protein chemistry, enzymes, mashing, and lautering. It is intended to be helpful and, hopefully, somewhat fun—or at least not boring. Instead of reading a list of review questions, you will explore a brewery, speak with its residents, and solve biochemical and brewing problems.
 
 **Questions on the test will come directly from room and object descriptions, conversations with NPCs, and pop quizzes in BrewMUD.** Read the text carefully. Finishing a quest quickly is not as useful as understanding what the rooms, objects, and characters are telling you.
 
@@ -66,7 +66,7 @@ These work for the Training Coordinator, Carbohydrate Curator, and Glucose. If a
 
 ## How quests work
 
-The quests form a sequence through malting, water chemistry, carbohydrate and starch structure, mashing, and lautering. You may explore anywhere, but you can have only one active quest at a time, and later quests unlock after earlier ones are completed.
+The quests form a sequence through malting, water chemistry, carbohydrate and starch structure, protein structure, enzyme and amylase behavior, mashing, and lautering. You may explore anywhere, but you can have only one active quest at a time, and later quests unlock after earlier ones are completed.
 
 - `TALK name` starts or advances a quest when that resident is involved.
 - The short **Objectives** line in each room reminds you what to do next.

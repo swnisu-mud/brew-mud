@@ -63,7 +63,7 @@ class Game:
         else:
             guidance = "Type JOURNAL to review your saved objective"
         return ("BREWMUD: The Biochemistry of Beer\n"
-                "You are a brewery biochemistry trainee. Seventy connected locations span maltings, "
+                f"You are a brewery biochemistry trainee. {len(ROOMS)} connected locations span maltings, "
                 "brewhouse, fermentation cellar, hop yard, quality labs, and packaging. Residents throughout "
                 "the brewery have substantial non-combat quests.\n"
                 f"{guidance}, HELP for commands, or MAP for a regional map.\n\n"

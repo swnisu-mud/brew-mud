@@ -58,7 +58,22 @@ QUESTS: dict[str, Quest] = {
         T("calcium_ion", "Ask Calcium about mash effects.", "Calcium can help reduce mash pH and stabilize alpha-amylase."),
         T("sulfate_ion", "Ask Sulfate about flavor.", "Sulfate emphasizes bitterness and dryness; excess can seem harsh."),
         T("chloride_ion", "Ask Chloride about flavor.", "Chloride tends to emphasize fullness and apparent sweetness."),
-        T("water_chemist", "Return with a balanced recommendation.", "The chemist corrects alkalinity first, then adjusts sulfate and chloride deliberately.")), 35, ("malt_house",)),
+        T("water_chemist", "Return with a balanced recommendation.", "The chemist corrects alkalinity first, then adjusts sulfate and chloride deliberately. Before you diagnose the production mash, the Carbohydrate Curator wants you in the laboratory inside the Mash Tun.")), 35, ("malt_house",)),
+
+    "starch_structure": Quest("Rebuild the Carbohydrate Map", "carbohydrate_curator",
+        "The Carbohydrate Curator gestures toward a scrambled set of molecular labels. “Before you diagnose a mash, prove that you can distinguish its substrate, products, and structural look-alikes. Rebuild this map from monomer to hydrated starch.”", (
+        T("glucose", "Identify the monomer used to build barley starch.", "“I am glucose, a single sugar unit. Thousands or millions of copies of me can be linked into polysaccharides with very different properties,” says Glucose."),
+        T("maltose", "Identify the brewing disaccharide released from starch.", "“I am maltose: two glucose units joined alpha-1,4. Beta-amylase releases me repeatedly from nonreducing starch-chain ends,” says Maltose."),
+        T("sucrose", "Determine which monosaccharides make sucrose.", "“I am a disaccharide of glucose and fructose,” says Sucrose. “The number of sugar units alone does not identify a molecule.”"),
+        T("lactose", "Compare lactose with sucrose.", "“I contain galactose and glucose, not fructose and glucose,” says Lactose. “I am useful here as a comparison, not as the principal sugar extracted from malt.”"),
+        T("amylose", "Trace the structure and packing of amylose.", "“I am mostly an unbranched alpha-1,4 glucose chain. I can form a left-handed helix and pack into hydrogen-bonded regions that exclude water,” says Amylose."),
+        T("amylopectin", "Trace amylopectin and locate its branch points.", "“I supply roughly seventy to eighty percent of ordinary starch. Alpha-1,6 branch points interrupt my alpha-1,4 chains every few dozen glucose units,” says Amylopectin."),
+        T("glycogen", "Compare glycogen with amylopectin.", "“Animals store glucose in my chains. I resemble amylopectin but branch more frequently, supporting rapid glucose mobilization,” says Glycogen."),
+        T("cellulose", "Explain why cellulose behaves unlike starch.", "“My glucose units use beta-1,4 linkages, producing straight structural chains rather than the alpha-linked substrate recognized by starch-degrading amylases,” says Cellulose."),
+        T("crystallinity_analyst", "Ask why packed starch can resist amylases.", "“Aligned, hydrogen-bonded chains exclude water and form ordered regions. Enzymes cannot efficiently attack bonds they cannot physically reach,” says the Crystallinity Analyst."),
+        T("gelatinization_specialist", "Determine what gelatinization changes.", "“Heat and water disrupt ordered packing and hydrate the glucan chains. That improves enzyme access, but gelatinization itself does not hydrolyze starch into sugar,” says the Gelatinization Specialist."),
+        T("grain_stress_agronomist", "Ask how growing conditions can change gelatinization.", "“Heat and drought during grain filling can raise starch gelatinization temperature. If access requires temperatures that damage the malt's amylases, self-conversion becomes difficult,” says the Grain-Stress Agronomist."),
+        T("carbohydrate_curator", "Return to the Carbohydrate Curator and rebuild the map.", "“Correct: composition identifies the building blocks, linkage and branching determine architecture, and heat plus water determine accessibility. Now you are ready to diagnose the stalled mash,” says the Carbohydrate Curator.")), 45, ("water_profile",)),
 
     "stalled_mash": Quest("The Stalled Mash", "head_brewer",
         "An iodine-dark sample worries the Head Brewer. “Decide whether access, temperature, pH, or enzyme activity is responsible.”", (
@@ -67,7 +82,7 @@ QUESTS: dict[str, Quest] = {
         T("beta_amylase", "Consult Beta-Amylase.", "Beta-amylase releases maltose from nonreducing ends but is relatively heat-sensitive."),
         T("alpha_amylase", "Consult Alpha-Amylase.", "Alpha-amylase cleaves internal alpha-1,4 bonds, lowers viscosity, and creates varied dextrins."),
         T("ph_meter", "Verify mash pH.", "The pH is corrected into the useful enzyme range."),
-        T("head_brewer", "Return with the diagnosis.", "A hot dough-in damaged beta-amylase activity; the wort will be less fermentable and fuller-bodied than planned.")), 40, ("water_profile",)),
+        T("head_brewer", "Return with the diagnosis.", "A hot dough-in damaged beta-amylase activity; the wort will be less fermentable and fuller-bodied than planned.")), 40, ("starch_structure",)),
 
     "clear_wort": Quest("The Stuck Runoff", "lauter_operator",
         "“The grant slowed to a trickle. Find out whether the bed needs patience, recirculation, or gentler sparging,” says the Lauter Operator.", (

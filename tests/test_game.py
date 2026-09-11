@@ -23,11 +23,11 @@ def npc_room(npc: str) -> str:
 
 class WorldTests(unittest.TestCase):
     def test_content_counts(self):
-        self.assertEqual(len(ROOMS), 70)
-        self.assertGreaterEqual(len(NPCS), 80)
-        self.assertEqual(len(QUESTS), 14)
-        self.assertGreaterEqual(sum(len(q.steps) for q in QUESTS.values()), 70)
-        self.assertGreaterEqual(len(QUIZZES), 18)
+        self.assertEqual(len(ROOMS), 78)
+        self.assertGreaterEqual(len(NPCS), 95)
+        self.assertEqual(len(QUESTS), 15)
+        self.assertGreaterEqual(sum(len(q.steps) for q in QUESTS.values()), 80)
+        self.assertGreaterEqual(len(QUIZZES), 27)
 
     def test_world_connected_and_exits_reciprocal(self):
         opposite = {"north":"south","south":"north","east":"west","west":"east",
@@ -98,8 +98,22 @@ class WorldTests(unittest.TestCase):
             self.assertEqual(len(available), 1, (completed, available))
             completed.add(available[0])
             order.append(available[0])
-        self.assertEqual(order[:5], ["orientation", "malt_house", "water_profile",
-                                    "stalled_mash", "clear_wort"])
+        self.assertEqual(order[:6], ["orientation", "malt_house", "water_profile",
+                                    "starch_structure", "stalled_mash", "clear_wort"])
+
+    def test_lecture_four_topics_have_dedicated_learning_spaces(self):
+        expected = {
+            "carbohydrate_lab", "glucose_bench", "disaccharide_gallery",
+            "polymer_comparison", "gelatinization_chamber", "crystallinity_lab",
+            "amylose_helix", "amylopectin_arbor",
+        }
+        self.assertEqual(
+            expected,
+            {room for room, region in ROOM_REGION.items() if region == "starch"},
+        )
+        self.assertTrue(expected.issubset(QUIZZES))
+        self.assertEqual(ROOMS["mash_tun"].exits["in"], "carbohydrate_lab")
+        self.assertEqual(ROOMS["gelatinization_chamber"].exits["out"], "conversion_bench")
 
 
 class CommandTests(unittest.TestCase):
@@ -155,6 +169,26 @@ class CommandTests(unittest.TestCase):
 
     def test_stalled_mash_first_objective_names_the_miller(self):
         self.assertIn("Miller", QUESTS["stalled_mash"].steps[0].objective)
+
+    def test_carbohydrate_quest_precedes_the_stalled_mash(self):
+        self.assertEqual(QUESTS["starch_structure"].requires, ("water_profile",))
+        self.assertEqual(QUESTS["stalled_mash"].requires, ("starch_structure",))
+        game = Game(pop_quizzes_enabled=False)
+        game.state.room = "carbohydrate_lab"
+        game.state.completed_quests.update({"orientation", "malt_house", "water_profile"})
+        response = game.talk("curator")
+        self.assertIn("QUEST STARTED — Rebuild the Carbohydrate Map", response)
+        self.assertIn("Identify the monomer", response)
+
+    def test_existing_stalled_mash_save_returns_to_new_prerequisite(self):
+        state = GameState(
+            completed_quests={"orientation", "malt_house", "water_profile"},
+            quest_stages={"stalled_mash": 2},
+        )
+        game = Game(state=state, pop_quizzes_enabled=False)
+        self.assertEqual(game.state.quest_stages, {})
+        self.assertEqual(game.reset_quest_titles, ["The Stalled Mash"])
+        self.assertIn("Rebuild the Carbohydrate Map", game.journal())
 
     def test_room_description_tracks_active_objectives(self):
         self.game.talk("training coordinator")

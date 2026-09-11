@@ -4,7 +4,7 @@ BrewMUD is a quest-driven multiplayer text world about the biochemistry of beer.
 
 This first playable build is based on the instructor's BBMB 1200 lecture material (with the history lecture intentionally omitted). It includes:
 
-- 70 connected rooms and seven compact regional maps
+- 78 connected rooms and eight compact regional maps
 - 85 NPCs, including brewery staff, enzymes, yeast, ions, proteins, and flavor molecules
 - 14 non-combat quests containing 72 objectives
 - one active quest at a time in a sequential, prerequisite-based quest line

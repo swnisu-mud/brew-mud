@@ -1,4 +1,4 @@
-"""The BrewMUD world: 70 connected locations from grain receiving to taproom."""
+"""The BrewMUD world: connected locations from grain receiving to taproom."""
 
 from __future__ import annotations
 
@@ -28,6 +28,14 @@ ROOM_DATA = (
     ("treatment_bay", "Water Treatment Bay", "carbon filter", "Chlorine, chloramine, iron, and unwanted alkalinity may require different treatments; one method does not solve every problem."),
     ("mill_room", "Malt Mill", "roller gap", "A good crush exposes endosperm while retaining husk pieces that later support the lauter filter bed."),
     ("mash_tun", "Mash Tun", "temperature rake", "Mash temperature and pH change the balance of enzyme activities and therefore wort fermentability and body."),
+    ("carbohydrate_lab", "Carbohydrate and Starch Laboratory", "molecular sorting board", "Carbohydrates are classified by their component monosaccharides, glycosidic linkages, chain architecture, and resulting physical properties."),
+    ("glucose_bench", "Glucose Bench", "glucose model", "Glucose is a monosaccharide: one sugar unit that serves both as a biological fuel and as the repeating building block of barley starch."),
+    ("disaccharide_gallery", "Disaccharide Gallery", "paired sugar models", "Maltose contains two glucose units, sucrose contains glucose plus fructose, and lactose contains glucose plus galactose; all are distinct disaccharides."),
+    ("polymer_comparison", "Glucose-Polymer Comparison Hall", "linkage comparison", "Starch, glycogen, and cellulose are all glucose polymers, but differences in linkage and branching produce very different structures and biological roles."),
+    ("gelatinization_chamber", "Gelatinization Chamber", "heated hydration cell", "Heating starch in water disrupts ordered granule packing and permits hydration, making glucan chains more accessible to amylases without itself hydrolyzing them."),
+    ("crystallinity_lab", "Starch Crystallinity Laboratory", "diffraction pattern", "Hydrogen-bonded packing can exclude water and form starch crystallites that resist amylase access until sufficient heat and hydration disrupt them."),
+    ("amylose_helix", "Amylose Helix Walk", "helical chain model", "Amylose is a mostly unbranched polymer of alpha-1,4-linked glucose that can coil into a hydrogen-bonded left-handed helix."),
+    ("amylopectin_arbor", "Amylopectin Branching Arbor", "branch-point model", "Amylopectin forms most barley starch and contains alpha-1,4-linked glucose chains joined by alpha-1,6 branch points roughly every few dozen residues."),
     ("protein_rest", "Protein Rest", "protease window", "Proteases are most useful below typical saccharification temperatures and can affect FAN, haze, and foam-active proteins."),
     ("beta_rest", "Beta-Amylase Rest", "maltose assay", "Beta-amylase attacks nonreducing ends to release maltose and is less heat-stable than alpha-amylase."),
     ("alpha_rest", "Alpha-Amylase Rest", "dextrin trace", "Alpha-amylase makes internal alpha-1,4 cleavages, rapidly lowering viscosity and producing dextrins of varied size."),
@@ -98,6 +106,12 @@ PLACEMENTS = {
     "ion_gallery": ("bicarbonate", "calcium_ion", "sulfate_ion", "chloride_ion"),
     "city_profiles": ("burton_guide",), "treatment_bay": ("treatment_chemist",),
     "mill_room": ("miller",), "mash_tun": ("head_brewer",), "protein_rest": ("protease",),
+    "carbohydrate_lab": ("carbohydrate_curator",), "glucose_bench": ("glucose",),
+    "disaccharide_gallery": ("maltose", "sucrose", "lactose"),
+    "polymer_comparison": ("glycogen", "cellulose"),
+    "gelatinization_chamber": ("gelatinization_specialist", "grain_stress_agronomist"),
+    "crystallinity_lab": ("crystallinity_analyst",),
+    "amylose_helix": ("amylose",), "amylopectin_arbor": ("amylopectin",),
     "beta_rest": ("beta_amylase",), "alpha_rest": ("alpha_amylase",),
     "conversion_bench": ("gelatinized_starch",), "mash_out": ("mash_out_operator",),
     "lauter_tun": ("lauter_operator",), "grain_bed": ("husk_keeper",),
@@ -137,6 +151,10 @@ NAMES = {
     "water_chemist":"Water Chemist", "ph_meter":"pH Meter", "bicarbonate":"Bicarbonate", "calcium_ion":"Calcium Ion",
     "sulfate_ion":"Sulfate Ion", "chloride_ion":"Chloride Ion", "burton_guide":"Burton Water Guide", "treatment_chemist":"Treatment Chemist",
     "miller":"Miller", "head_brewer":"Head Brewer", "protease":"Protease", "beta_amylase":"Beta-Amylase", "alpha_amylase":"Alpha-Amylase",
+    "carbohydrate_curator":"Carbohydrate Curator", "glucose":"Glucose", "sucrose":"Sucrose", "lactose":"Lactose",
+    "maltose":"Maltose", "glycogen":"Glycogen", "cellulose":"Cellulose", "gelatinization_specialist":"Gelatinization Specialist",
+    "grain_stress_agronomist":"Grain-Stress Agronomist",
+    "crystallinity_analyst":"Crystallinity Analyst", "amylose":"Amylose", "amylopectin":"Amylopectin",
     "gelatinized_starch":"Gelatinized Starch", "mash_out_operator":"Mash-Out Operator", "lauter_operator":"Lauter Operator",
     "husk_keeper":"Husk Keeper", "sparge_technician":"Sparge Technician", "vorlauf_guide":"Vorlauf Guide", "kettle_brewer":"Kettle Brewer",
     "boil_engineer":"Boil Engineer", "dosing_brewer":"Hop-Dosing Brewer", "whirlpool_operator":"Whirlpool Operator",
@@ -193,6 +211,18 @@ NPC_DESCRIPTIONS = {
     "treatment_chemist": "Activated carbon, acid, salts, reverse osmosis, and dechlorination reagents are labeled by the specific problem each can solve.",
     "miller": "The miller adjusts paired rollers to crack kernels and expose endosperm while avoiding both intact grain and excessive flour.",
     "head_brewer": "The brewer compares time, temperature, pH, and iodine tests to determine whether starch conversion follows the intended mash profile.",
+    "carbohydrate_curator": "The curator stands beside molecular models from single sugar rings to million-residue polymers, sorting them by composition, linkage, and branching rather than by name alone.",
+    "glucose": "A single hexose ring marks the monosaccharide that supplies carbon and energy to cells and repeats thousands of times within barley starch.",
+    "maltose": "Two glucose units joined by an alpha-1,4 glycosidic bond form the fermentable disaccharide released repeatedly by beta-amylase from starch-chain ends.",
+    "sucrose": "A glucose unit and a fructose unit meet across the glycosidic bond of this common table-sugar disaccharide.",
+    "lactose": "A galactose unit joined to glucose forms this milk-sugar disaccharide, chemically distinct from sucrose despite sharing the same broad classification.",
+    "glycogen": "A densely branched alpha-glucose polymer displays more frequent branch points than amylopectin, allowing animals to mobilize stored glucose rapidly.",
+    "cellulose": "Long beta-1,4-linked glucose chains align into straight, hydrogen-bonded bundles that provide structural strength to plant cell walls.",
+    "gelatinization_specialist": "The specialist tracks granule swelling and loss of ordered structure as heat allows water to penetrate between starch chains.",
+    "grain_stress_agronomist": "Field-temperature and drought records sit beside starch tests showing how the environment during grain filling can alter granule crystallinity and gelatinization temperature.",
+    "crystallinity_analyst": "Diffraction traces and hydration measurements reveal ordered, hydrogen-bonded regions that exclude water and limit amylase access.",
+    "amylose": "A mostly unbranched alpha-1,4 glucan winds into a left-handed helix whose aligned chains can form enzyme-resistant crystalline regions.",
+    "amylopectin": "A vast alpha-glucose polymer extends through many alpha-1,4 chains connected by alpha-1,6 branch points, accounting for most ordinary starch.",
     "protease": "A catalytic cleft positions peptide bonds for hydrolysis, releasing smaller peptides and amino nitrogen during a suitable low-temperature rest.",
     "beta_amylase": "The enzyme grips a nonreducing starch-chain end and removes maltose units sequentially, stopping at branch-imposed limits.",
     "alpha_amylase": "The enzyme binds within an alpha-1,4 glucan chain and makes internal cuts that reduce viscosity and create new chain ends.",
@@ -285,6 +315,18 @@ NPC_DIALOGUE = {
     "treatment_chemist": "Name the problem before choosing the treatment: carbon, acid, salts, dechlorination, and reverse osmosis solve different chemical problems.",
     "miller": "I want fractured endosperm and recognizable husk pieces. Intact kernels hide extract, while excessive flour can make lautering painfully slow.",
     "head_brewer": "Mash temperature is a choice about enzyme survival and product distribution, not merely a number to hit on the thermometer.",
+    "carbohydrate_curator": "Calling everything here a sugar hides the useful distinctions. Count the sugar units, identify their monomers, then inspect the bonds and branches.",
+    "glucose": "I am one monosaccharide, not a short starch. Link many copies of me in different ways and you can build amylose, amylopectin, glycogen, or cellulose.",
+    "maltose": "I am two glucose units joined alpha-1,4. Beta-amylase releases me from nonreducing starch-chain ends, making me especially relevant to wort fermentability.",
+    "sucrose": "I pair glucose with fructose. Lactose is also a disaccharide, but its second unit is galactose, so the two names are not interchangeable.",
+    "lactose": "I am milk sugar: galactose linked to glucose. My presence here is comparative—the principal extract from malt is not lactose.",
+    "glycogen": "Animals store glucose in my highly branched chains. I resemble amylopectin, but my branch points occur more frequently.",
+    "cellulose": "My glucose units use beta-1,4 linkages. That geometry makes straight structural chains that brewing amylases cannot treat like alpha-linked starch.",
+    "gelatinization_specialist": "Heat does not convert starch into sugar by itself. Heat and water disrupt ordered packing so amylases can reach bonds they can hydrolyze.",
+    "grain_stress_agronomist": "Heat and drought during starch formation can raise barley's gelatinization temperature. If access comes only after amylases are damaged, the malt may struggle to self-convert.",
+    "crystallinity_analyst": "When aligned starch chains hydrogen-bond tightly, they exclude water and resist enzymes. A warmer, well-hydrated granule loses that order.",
+    "amylose": "Most of my glucose units form one alpha-1,4-linked chain. I can coil into a left-handed helix and pack with neighboring chains.",
+    "amylopectin": "I usually make up seventy to eighty percent of starch. My alpha-1,6 branches interrupt an alpha-1,4-linked backbone and create many chain ends.",
     "protease": "At a suitable lower-temperature rest I release peptides and amino nitrogen, but an unnecessary or excessive rest can weaken foam-supporting proteins.",
     "beta_amylase": "Give me accessible nonreducing chain ends and moderate heat, and I release maltose repeatedly until a branch or damaged activity stops me.",
     "alpha_amylase": "I cut alpha-1,4 bonds within starch chains. Those internal cleavages reduce viscosity and create additional ends for other enzymes to use.",
@@ -343,6 +385,8 @@ grid((("grain_receiving","barley_lab","steep_house","air_rest","germination_floo
 grid((("water_lab","ph_bench","ion_gallery","city_profiles"),
       ("treatment_bay","mill_room","mash_tun","protein_rest"),
       ("beta_rest","alpha_rest","conversion_bench","mash_out")))
+grid((("carbohydrate_lab","glucose_bench","disaccharide_gallery","polymer_comparison"),
+      ("gelatinization_chamber","crystallinity_lab","amylose_helix","amylopectin_arbor")))
 grid((("lauter_tun","grain_bed","sparge_arm","wort_grant","kettle"),
       ("hot_break","hop_dosing","whirlpool","heat_exchanger","oxygenation_station")))
 grid((("pitching_deck","ale_fermenter","lager_fermenter","yeast_lab","yeast_membrane","maltose_gate","maltase_bench"),
@@ -356,6 +400,8 @@ grid((("microbiology_lab","sanitation_bay","qa_chemistry"),
 
 # Regional transitions follow the production process and add useful shortcuts.
 connect("germination_floor", "down", "water_lab")
+connect("mash_tun", "in", "carbohydrate_lab")
+connect("gelatinization_chamber", "out", "conversion_bench")
 connect("mash_out", "down", "lauter_tun")
 connect("oxygenation_station", "down", "pitching_deck")
 connect("hop_dosing", "in", "alpha_acid_bench")
@@ -376,6 +422,7 @@ AMBIENT_SPEECH = {
     "cure_floor": 'The Head Maltster mutters, “Another uneven lot. I could use a biochemist.”',
     "water_lab": 'The Water Chemist says, “Never copy a city profile without asking what each ion is doing.”',
     "mash_tun": 'The Head Brewer frowns at an iodine test. “Conversion should be further along.”',
+    "carbohydrate_lab": 'The Carbohydrate Curator calls, “Before we diagnose the mash, rebuild this molecular map.”',
     "lauter_tun": 'The Lauter Operator complains, “The runoff is slowing again.”',
     "kettle": 'The Kettle Brewer says, “All those hops, and the aroma still vanished.”',
     "maturation_cellar": 'The Cellar Manager calls, “I have a fermentation that stopped early.”',

@@ -8,6 +8,14 @@ BrewMUD is a substitute for a typical study guide for our material on malting, m
 
 Course link: ________________________________________________
 
+## A very short history of MUDs
+
+*Dungeons & Dragons*, first published in 1974, made it possible for players to take roles in a shared imaginary world and develop their characters through adventures. Early computer-game designers combined ideas from tabletop role-playing with text adventures. In 1978, Roy Trubshaw began **MUD1**—the first Multi-User Dungeon—on a mainframe at the University of Essex; Richard Bartle later continued its development. Players connected to the same persistent, text-described world and typed commands to explore and interact.
+
+MUDs flourished during the 1980s and 1990s, producing families such as DikuMUD, CircleMUD, and Merc. Their shared worlds, online characters, chat, quests, and progression helped establish the basic design of later graphical **massively multiplayer online role-playing games (MMORPGs)**. *World of Warcraft*, released in 2004, presents its world graphically, but many of its underlying ideas would be familiar to a MUD player. BrewMUD returns to that text-based tradition and replaces fantasy combat with biochemical investigation.
+
+*Historical sources: [D&D at 50](https://corp.hasbro.com/news-releases/news-release-details/dungeons-dragons-celebrates-50th-anniversary-2024-more-50), [Richard Bartle's early MUD history](https://mud.co.uk/richard/mudhist.htm), [University of Essex profile of Richard Bartle](https://www.essex.ac.uk/people/BARTL01006/Richard-Bartle), and [Blizzard's World of Warcraft timeline](https://worldofwarcraft.blizzard.com/en-gb/story/timeline/chapter-6).*
+
 ## Getting started
 
 1. Open the course link and choose **Create new account**.

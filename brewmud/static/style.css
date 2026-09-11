@@ -118,6 +118,7 @@ button:hover { filter: brightness(1.1); }
 }
 .mini-map-node.current { color: #03110d; background: var(--cyan); border-color: var(--cyan); }
 .mini-map-current { margin: 0; color: var(--cyan); font-size: .72rem; font-weight: 700; }
+.map-help { margin: .28rem 0 0; color: var(--muted); font-size: .64rem; line-height: 1.25; }
 .message { white-space: pre-wrap; line-height: 1.55; margin-bottom: 1.15rem; }
 .message.command { color: var(--amber); margin-bottom: .45rem; }
 .message.social { color: var(--cyan); }

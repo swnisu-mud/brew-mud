@@ -204,6 +204,28 @@ class MultiplayerTests(unittest.TestCase):
         server.command(alice, "east")
         self.assertEqual(server._players[alice].game.state.room, server._players[bob].game.state.room)
 
+    def test_group_chat_reaches_only_the_follow_group(self):
+        server = MUDServer(":memory:")
+        self.addCleanup(server.close)
+        alice, _ = server.register("Alice", "barley-123")
+        bob, _ = server.register("Bob", "maltose-123")
+        carol, _ = server.register("Carol", "glucose-123")
+        server.command(bob, "follow Alice")
+        for player in (alice, bob, carol):
+            server.poll(player)
+
+        response = server.command(alice, "group Check beta-amylase?")
+
+        self.assertIn("You tell your group", response)
+        self.assertIn("Alice tells the group", "\n".join(server.poll(bob)))
+        self.assertEqual(server.poll(carol), [])
+
+    def test_group_chat_requires_a_follow_group(self):
+        server = MUDServer(":memory:")
+        self.addCleanup(server.close)
+        alice, _ = server.register("Alice", "barley-123")
+        self.assertIn("No one else", server.command(alice, "group Anyone here?"))
+
     def test_players_have_independent_quest_state(self):
         server = MUDServer(":memory:")
         self.addCleanup(server.close)
@@ -302,6 +324,8 @@ class AssetTests(unittest.TestCase):
         self.assertIn("TALK TRAIN", instructions)
         self.assertIn("Press any key to continue", instructions)
         self.assertIn("show_instructions", (static / "app.js").read_text())
+        self.assertIn('id="group-form"', instructions)
+        self.assertIn("group> ${message}", (static / "app.js").read_text())
         self.assertLess(instructions.index("Create new account"), instructions.index("Log in</button>"))
 
     def test_render_blueprint_uses_web_service_and_health_check(self):

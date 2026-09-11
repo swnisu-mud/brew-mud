@@ -52,7 +52,7 @@ h1 span { color: var(--bright); }
 #instructions-continue { display: none; }
 @keyframes prompt-pulse { 50% { opacity: .5; } }
 label { color: var(--cyan); }
-.input-row, .command-row { display: flex; gap: .65rem; align-items: center; }
+.input-row, .command-row, .group-row { display: flex; gap: .65rem; align-items: center; }
 .account-fields { display: grid; grid-template-columns: auto 1fr; gap: .7rem 1rem; align-items: center; }
 .account-actions { display: flex; gap: .65rem; margin-top: 1rem; }
 .account-actions button { color: var(--ink); background: transparent; border: 1px solid var(--muted); }
@@ -76,6 +76,7 @@ button:hover { filter: brightness(1.1); }
 .terminal { height: min(65vh, 650px); overflow-y: auto; padding: 1.2rem; scrollbar-color: var(--muted) transparent; }
 .message { white-space: pre-wrap; line-height: 1.55; margin-bottom: 1.15rem; }
 .message.command { color: var(--amber); margin-bottom: .45rem; }
+.message.group-command { color: var(--violet); margin-bottom: .45rem; }
 .message.social { color: var(--cyan); }
 .message.error { color: #ff8e8e; }
 .message > div:empty { min-height: .8rem; }
@@ -108,6 +109,10 @@ body.quiz-flash::before { animation: quiz-pulse .85s ease-out; }
 }
 .command-row { padding: .85rem 1.2rem; border-top: 1px solid var(--line); }
 .command-row button { padding-block: .65rem; }
+.group-row { padding: 0 1.2rem .85rem; }
+.group-row label { color: var(--violet); }
+.group-row input:focus { border-color: var(--violet); box-shadow: 0 0 0 3px rgba(231, 183, 220, .12); }
+.group-row button { padding-block: .65rem; color: #180b16; background: var(--violet); }
 .shortcut { margin: 0; padding: 0 1.2rem 1rem; color: var(--muted); font-size: .8rem; }
 code { color: var(--amber); }
 

@@ -83,6 +83,8 @@ class MUDServer:
                 return "Browser progress saves automatically to your account after every game command."
             if verb.lower() in {"say", "chat"}:
                 return self._say(token, argument)
+            if verb.lower() in {"group", "party"}:
+                return self._group_say(token, argument)
             if verb.lower() == "who":
                 return self._who(token)
             if verb.lower() == "follow":
@@ -93,6 +95,7 @@ class MUDServer:
                 response = (
                     session.game.help()
                     + "\n  SAY <message>       Speak to players in your room"
+                    + "\n  GROUP <message>     Speak privately to your follow group"
                     + "\n  WHO                 List nearby and online players"
                     + "\n  FOLLOW <player>     Move with another player"
                     + "\n  UNFOLLOW            Stop following"
@@ -154,6 +157,20 @@ class MUDServer:
         self._broadcast(room, f'{session.name} says, “{message}”', exclude=token)
         return f'You say, “{message}”'
 
+    def _group_say(self, token: str, message: str) -> str:
+        session = self._require(token)
+        message = message.strip()
+        if not message:
+            return "Tell your group what?"
+        if len(message) > 500:
+            return "Please keep group messages under 500 characters."
+        recipients = self._follow_group_tokens(token) - {token}
+        if not recipients:
+            return "No one else is in your follow group. Use FOLLOW <player> first."
+        for recipient in recipients:
+            self._players[recipient].messages.append(f'{session.name} tells the group, “{message}”')
+        return f'You tell your group, “{message}”'
+
     def _who(self, token: str) -> str:
         session = self._require(token)
         here = [p.name for p in self._players.values() if p.game.state.room == session.game.state.room]
@@ -208,7 +225,7 @@ class MUDServer:
         leader.messages.append(f"{session.name} begins following you.")
         return (
             f"You begin following {leader.name}. When {leader.name} moves, you will move too.\n"
-            "Your pop quizzes remain private; use SAY to discuss them with the group."
+            "Your pop quizzes remain private; use the group> box to discuss them with your group."
         )
 
     def _unfollow(self, token: str) -> str:
@@ -268,7 +285,7 @@ class MUDServer:
             details = ", ".join(f"{name} ({action})" for name, action in blocked)
             return (
                 f"Group movement waits for {details}. "
-                "The group can continue discussing the question with SAY."
+                "Keep discussing the question in the group> box."
             )
 
         previous_leader = leader.following
@@ -369,6 +386,24 @@ class MUDServer:
                 and token not in group
             )
             index += 1
+        return group
+
+    def _follow_group_tokens(self, token: str) -> set[str]:
+        """Return the connected follow group, including leaders and nested followers."""
+        group = {token}
+        pending = [token]
+        while pending:
+            current = pending.pop()
+            leader = self._players[current].following
+            neighbors = ([leader] if leader in self._players else []) + [
+                other_token
+                for other_token, player in self._players.items()
+                if player.following == current
+            ]
+            for neighbor in neighbors:
+                if neighbor not in group:
+                    group.add(neighbor)
+                    pending.append(neighbor)
         return group
 
     def _occupants_text(self, token: str) -> str:

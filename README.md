@@ -50,7 +50,7 @@ map
 
 ## Commands
 
-`LOOK`, `TALK`, compass directions or `GO`, `JOURNAL`, `HINT`, `MAP`, `NOTES`, `STATUS`, `QUIZ`, `PAUSE`, `A`–`D`, and `QUIT` work in solo and browser play. Browser sessions also add `SAY`, `WHO`, `FOLLOW`, and `UNFOLLOW`; account progress saves automatically. The solo terminal additionally supports file-based `SAVE` and `LOAD`.
+`LOOK`, `TALK`, compass directions or `GO`, `JOURNAL`, `HINT`, `MAP`, `NOTES`, `STATUS`, `QUIZ`, `PAUSE`, `A`–`D`, and `QUIT` work in solo and browser play. Browser sessions also add `SAY`, `GROUP`, `WHO`, `FOLLOW`, and `UNFOLLOW`; the dedicated `group>` box sends ordinary text to the entire follow group without requiring a command. Account progress saves automatically. The solo terminal additionally supports file-based `SAVE` and `LOAD`.
 
 Quest NPCs announce problems in first-arrival dialogue. Talking to a quest giver starts the quest, and a player can keep several active objectives at once. `JOURNAL` records active and discovered work; `HINT` calculates a shortest route to every active objective.
 

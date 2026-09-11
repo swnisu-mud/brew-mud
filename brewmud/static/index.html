@@ -70,17 +70,6 @@
       <div class="play-area">
         <div id="terminal" class="terminal" role="log" aria-live="polite" aria-label="Game output"></div>
         <aside id="progress-panel" class="progress-panel" aria-label="Player information">
-          <section class="side-section" aria-labelledby="progress-title">
-            <p id="progress-title" class="side-title">Your progress</p>
-            <p id="progress-rank" class="progress-rank">Brewery Visitor</p>
-            <dl>
-              <div><dt>Insight</dt><dd id="progress-insight">0</dd></div>
-              <div><dt>Locations</dt><dd id="progress-locations">0/90</dd></div>
-              <div><dt>Quests</dt><dd id="progress-quests">0/16</dd></div>
-              <div><dt>Checks</dt><dd id="progress-checks">0/39</dd></div>
-            </dl>
-            <p id="progress-next" class="progress-next">Next rank: Malt House Hand at 20 Insight.</p>
-          </section>
           <section class="side-section quest-panel" aria-labelledby="quest-panel-title">
             <p id="quest-panel-title" class="side-title">Active quest</p>
             <p id="quest-title" class="quest-title">First Day in the Brewery</p>
@@ -93,7 +82,17 @@
             <p id="mini-map-title" class="mini-map-title">Maltings</p>
             <div id="mini-map" class="mini-map" role="img" aria-label="Current regional map"></div>
             <p id="mini-map-current" class="mini-map-current">Here: Brewery Gate</p>
-            <p class="map-help">Type <code>MAP</code> for location names and transitions.</p>
+          </section>
+          <section class="side-section progress-section" aria-labelledby="progress-title">
+            <p id="progress-title" class="side-title">Your progress</p>
+            <p id="progress-rank" class="progress-rank">Brewery Visitor</p>
+            <dl>
+              <div><dt>Insight</dt><dd id="progress-insight">0</dd></div>
+              <div><dt>Locations</dt><dd id="progress-locations">0/90</dd></div>
+              <div><dt>Quests</dt><dd id="progress-quests">0/16</dd></div>
+              <div><dt>Checks</dt><dd id="progress-checks">0/39</dd></div>
+            </dl>
+            <p id="progress-next" class="progress-next">Next rank: Malt House Hand at 20 Insight.</p>
           </section>
         </aside>
       </div>

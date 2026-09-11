@@ -79,12 +79,6 @@ class Game:
             self.state.learned_facts.add(room.key)
         visible = [NPCS[k].name for k in room.npcs if k != self.state.companion]
         lines = [room.name, room.description]
-        if self.state.quest_stages:
-            active = list(self.state.quest_stages.items())
-            objectives = [QUESTS[key].steps[stage].objective for key, stage in active[:2]]
-            if len(active) > 2:
-                objectives.append(f"+{len(active) - 2} more (JOURNAL)")
-            lines.append("Objectives: " + " | ".join(objectives))
         if visible:
             lines.append("Nearby: " + ", ".join(visible) + ".")
         lines.append("Exits: " + ", ".join(room.exits) + ".")

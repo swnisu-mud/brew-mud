@@ -252,11 +252,14 @@ class CommandTests(unittest.TestCase):
         self.assertEqual(game.reset_quest_titles, ["The Stalled Mash"])
         self.assertIn("The Enzyme That Lost Its Shape", game.journal())
 
-    def test_room_description_tracks_active_objectives(self):
+    def test_room_description_leaves_active_objective_in_side_panel(self):
         self.game.talk("training coordinator")
         room = self.game.describe_room()
-        self.assertIn("Objectives: Find and meet the Head Maltster.", room)
-        self.assertNotIn("First Day in the Brewery:", room)
+        self.assertNotIn("Objectives:", room)
+        self.assertEqual(
+            self.game.side_panel_data()["quest"]["objective"],
+            "Find and meet the Head Maltster.",
+        )
 
     def test_head_maltster_welcomes_player_and_explains_next_step(self):
         self.game.talk("coordinator")
@@ -271,14 +274,6 @@ class CommandTests(unittest.TestCase):
         response = self.game.talk("coordinator")
         self.assertIn("NEXT LEAD — A barley lot is germinating unevenly", response)
         self.assertIn("Find Head Maltster at Malt Curing Floor", response)
-
-    def test_room_tracker_is_compact_when_many_quests_are_active(self):
-        keys = list(QUESTS)[:5]
-        self.game.state.quest_stages = {key: 0 for key in keys}
-        room = self.game.describe_room()
-        objective_line = next(line for line in room.splitlines() if line.startswith("Objectives:"))
-        self.assertEqual(objective_line.count(" | "), 2)
-        self.assertIn("+3 more (JOURNAL)", objective_line)
 
     def test_hint_routes_to_each_active_objective(self):
         self.game.talk("coordinator")

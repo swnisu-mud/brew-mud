@@ -123,7 +123,6 @@ document.querySelector("#sound-toggle").addEventListener("click", () => {
 
 function classifyLine(line, index, roomTitleIndex) {
   if (line.startsWith("QUEST") || line.startsWith("OBJECTIVE") || line.startsWith("KNOWLEDGE CHECK") || line.startsWith("POP QUIZ") || line.startsWith("CONTINUE") || line.startsWith("REGIONAL MAP") || line.startsWith("BREWMUD REGIONAL MAPS") || line.startsWith("Regional Transitions")) return "objective";
-  if (line.startsWith("Objectives:")) return "quest-summary";
   if (line.startsWith("YOU ARE HERE")) return "room-title";
   if (index === roomTitleIndex) return "room-title";
   if (line.startsWith("Exits:") || line.startsWith("Local routes:")) return "exits";

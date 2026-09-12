@@ -10,9 +10,10 @@ This first playable build is based on the instructor's BBMB 1200 lecture materia
 - one active quest at a time in a sequential, prerequisite-based quest line
 - 39 delayed, randomized pop quizzes about previously visited material
 - randomized answer positions, bare `A`/`B`/`C`/`D` answers, quiz pausing, review routes, and an incorrect-answer penalty
-- six progression ranks based on exploration, quests, and knowledge checks
+- fourteen progression ranks based on exploration, quests, and knowledge checks
 - browser-based multiplayer presence and local room chat
 - first-arrival NPC chatter, colored semantic output, and quiz sound/screen flash
+- an optional ten-question anonymous evaluation with account-level completion tracking
 
 ## Run it on this laptop
 
@@ -49,7 +50,7 @@ map
 
 ## Commands
 
-`LOOK`, `TALK`, compass directions or `GO`, `JOURNAL`, `HINT`, `MAP`, `NOTES`, `STATUS`, `QUIZ`, `PAUSE`, `A`–`D`, and `QUIT` work in solo and browser play. Browser sessions also add local `SAY`, `WHO`, and a two-step `RESTART` command for resetting personal progress; account progress saves automatically. Following and private group chat are retained internally as an experimental mode but disabled in the student study-guide version. The solo terminal additionally supports file-based `SAVE` and `LOAD`.
+`LOOK`, `TALK`, compass directions or `GO`, `JOURNAL`, `HINT`, `MAP`, `NOTES`, `STATUS`, `QUIZ`, `PAUSE`, `A`–`D`, and `QUIT` work in solo and browser play. Browser sessions also add local `SAY`, `WHO`, `SURVEY` (or `EVALUATE`), and a two-step `RESTART` command for resetting personal progress; account progress saves automatically. Following and private group chat are retained internally as an experimental mode but disabled in the student study-guide version. The solo terminal additionally supports file-based `SAVE` and `LOAD`.
 
 Quest NPCs announce problems in first-arrival dialogue. The assignments unlock sequentially, and each player can have only one active quest. `JOURNAL` records the current assignment and next available lead; `HINT` calculates a shortest route to the objective.
 
@@ -125,6 +126,8 @@ Render files outside the disk mount are temporary and are replaced at every depl
 
 ### Instructor progress
 
-Set `BREWMUD_ADMIN_PASSWORD` to a strong, unique value in the Render service's **Environment** page. Then visit `/instructor` on the deployed BrewMUD site and enter that password. The read-only dashboard shows each account's rank, Insight, locations explored, quests completed, knowledge checks completed, next rank, and last activity. It refreshes every 30 seconds while open. Students should report their player-chosen account names if the dashboard will be used for extra credit.
+Set `BREWMUD_ADMIN_PASSWORD` to a strong, unique value in the Render service's **Environment** page. Then visit `/instructor` on the deployed BrewMUD site and enter that password. The read-only dashboard shows each account's rank, Insight, locations explored, quests completed, knowledge checks completed, survey-completion status, next rank, and last activity. It refreshes every 30 seconds while open. Students should report their player-chosen account names if the dashboard will be used for extra credit.
+
+Students can enter `SURVEY` or `EVALUATE` to open a ten-question, 1–10 evaluation with an optional comment. Completion is stored on the account, while answers are placed in a separate table with no account ID, name, rank, activity, IP address, or submission time. The instructor dashboard reports who completed the survey but displays only anonymous aggregate answers and shuffled comments. Results remain suppressed until at least five responses have been submitted. Free-text comments can still identify their author by their content, so the form tells students not to provide identifying details.
 
 Player presence and chat remain in server memory, so a restart or redeploy disconnects current players. Account progress survives. Password reset and moderation are not included in this first account version.

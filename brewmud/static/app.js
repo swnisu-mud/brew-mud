@@ -6,6 +6,8 @@ let pendingWelcome = "";
 let awaitingQuizContinue = false;
 const terminal = document.querySelector("#terminal");
 const commandInput = document.querySelector("#command");
+const surveyDialog = document.querySelector("#survey-dialog");
+const surveyForm = document.querySelector("#survey-form");
 
 function updateProgress(progress) {
   if (!progress) return;
@@ -162,6 +164,83 @@ async function api(path, options = {}) {
   return data;
 }
 
+async function openSurvey() {
+  try {
+    const data = await api(`/api/survey?token=${encodeURIComponent(token)}`);
+    if (data.completed) {
+      append("SURVEY COMPLETE — This account has already submitted the course evaluation.");
+      return;
+    }
+    const questions = document.querySelector("#survey-questions");
+    questions.replaceChildren();
+    data.questions.forEach((question, index) => {
+      const field = document.createElement("div");
+      field.className = "survey-question";
+      const label = document.createElement("label");
+      const selectId = `survey-rating-${index}`;
+      label.htmlFor = selectId;
+      label.textContent = `${index + 1}. ${question}`;
+      const select = document.createElement("select");
+      select.id = selectId;
+      select.dataset.surveyRating = "true";
+      select.setAttribute("aria-describedby", "survey-scale");
+      const unanswered = document.createElement("option");
+      unanswered.value = "";
+      unanswered.textContent = "Prefer not to answer";
+      select.appendChild(unanswered);
+      for (let score = data.scale_min; score <= data.scale_max; score += 1) {
+        const option = document.createElement("option");
+        option.value = String(score);
+        option.textContent = String(score);
+        select.appendChild(option);
+      }
+      field.append(label, select);
+      questions.appendChild(field);
+    });
+    document.querySelector("#survey-scale").textContent =
+      `${data.scale_min} = ${data.scale_low_label} · ${data.scale_max} = ${data.scale_high_label}`;
+    document.querySelector("#survey-comment").value = "";
+    document.querySelector("#survey-comment").maxLength = data.comment_limit;
+    document.querySelector("#survey-error").textContent = "";
+    surveyDialog.showModal();
+    document.querySelector("#survey-rating-0").focus();
+  } catch (err) {
+    append(err.message, "error");
+  }
+}
+
+function closeSurvey() {
+  surveyDialog.close();
+  commandInput.focus();
+}
+
+document.querySelector("#survey-close").addEventListener("click", closeSurvey);
+document.querySelector("#survey-cancel").addEventListener("click", closeSurvey);
+
+surveyForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const error = document.querySelector("#survey-error");
+  error.textContent = "";
+  const ratings = Array.from(document.querySelectorAll("[data-survey-rating]"), (select) =>
+    select.value === "" ? null : Number(select.value)
+  );
+  try {
+    const data = await api("/api/survey/submit", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        token,
+        ratings,
+        comment: document.querySelector("#survey-comment").value,
+      }),
+    });
+    closeSurvey();
+    append(data.message, "reward");
+  } catch (err) {
+    error.textContent = err.message;
+  }
+});
+
 function enterGame() {
   document.removeEventListener("keydown", continueFromInstructions);
   document.querySelector("#instructions").hidden = true;
@@ -231,13 +310,14 @@ document.querySelector("#command-form").addEventListener("submit", async (event)
     awaitingQuizContinue = Boolean(data.awaiting_continue);
     updateProgress(data.progress);
     updateSidePanel(data.side_panel);
+    if (data.open_survey) await openSurvey();
   } catch (err) {
     append(err.message, "error");
   }
 });
 
 document.addEventListener("keydown", async (event) => {
-  if (!awaitingQuizContinue || !token || event.ctrlKey || event.altKey || event.metaKey) return;
+  if (surveyDialog.open || !awaitingQuizContinue || !token || event.ctrlKey || event.altKey || event.metaKey) return;
   event.preventDefault();
   awaitingQuizContinue = false;
   commandInput.value = "";

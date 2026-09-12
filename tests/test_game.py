@@ -20,6 +20,7 @@ from brewmud.quests import QUESTS
 from brewmud.quizzes import QUIZZES
 from brewmud.regional_maps import REGIONAL_MAPS, ROOM_REGION, compact_map_data
 from brewmud.server import MUDServer
+from brewmud.survey import SURVEY_QUESTIONS, validate_ratings
 from brewmud.world import NPC_DESCRIPTIONS, NPC_DIALOGUE, NPCS, ROOMS
 
 
@@ -479,6 +480,51 @@ class MultiplayerTests(unittest.TestCase):
 
         self.assertEqual(panel, server._players[token].game.side_panel_data())
 
+    def test_survey_command_submits_once_and_tracks_only_completion(self):
+        server = MUDServer(":memory:")
+        self.addCleanup(server.close)
+        token, _ = server.register("Alice", "barley-123")
+
+        self.assertIn("SURVEY READY", server.command(token, "evaluate"))
+        form = server.survey_form(token)
+        self.assertFalse(form["completed"])
+        self.assertEqual(form["questions"], list(SURVEY_QUESTIONS))
+        server.submit_survey(token, list(range(1, 11)), "More enzyme puzzles, please.")
+
+        self.assertTrue(server.survey_form(token)["completed"])
+        self.assertTrue(server.instructor_progress()[0]["survey_completed"])
+        self.assertIn("already submitted", server.command(token, "survey"))
+        with self.assertRaisesRegex(ValueError, "already completed"):
+            server.submit_survey(token, [10] * 10, "A second response")
+
+    def test_survey_waits_for_quiz_and_withholds_small_result_sets(self):
+        server = MUDServer(":memory:")
+        self.addCleanup(server.close)
+        token, _ = server.register("Alice", "barley-123")
+        server._players[token].game.state.active_quiz = "mash_tun"
+        self.assertIn("PAUSE", server.command(token, "survey"))
+        server._players[token].game.state.active_quiz = None
+        server.submit_survey(token, [None] * 10, "")
+
+        summary = server.instructor_survey_summary()
+        self.assertTrue(summary["withheld"])
+        self.assertEqual(summary["submitted"], 1)
+        self.assertEqual(summary["questions"], [])
+
+    def test_survey_summary_aggregates_without_player_fields(self):
+        server = MUDServer(":memory:")
+        self.addCleanup(server.close)
+        token, _ = server.register("Alice", "barley-123")
+        server.submit_survey(token, [10, None] + [8] * 8, "Useful and memorable.")
+
+        with patch("brewmud.server.SURVEY_MINIMUM_RESULTS", 1):
+            summary = server.instructor_survey_summary()
+        self.assertFalse(summary["withheld"])
+        self.assertEqual(summary["questions"][0]["average"], 10.0)
+        self.assertEqual(summary["questions"][1]["responses"], 0)
+        self.assertEqual(summary["comments"], ["Useful and memorable."])
+        self.assertNotIn("Alice", json.dumps(summary))
+
     def test_account_progress_survives_logout_and_login(self):
         server = MUDServer(":memory:")
         self.addCleanup(server.close)
@@ -578,6 +624,29 @@ class AccountStoreTests(unittest.TestCase):
         self.assertEqual(report[0].name, "Cellar Student")
         self.assertEqual(report[0].state.insight, 47)
 
+    def test_anonymous_survey_table_contains_no_account_linkage(self):
+        store = AccountStore(":memory:")
+        self.addCleanup(store.close)
+        account = store.register("Cellar Student", "not-plain-text")
+        store.submit_survey(account.id, [1, 2, 3, 4, 5, None, 7, 8, 9, 10], "Optional note")
+
+        columns = {
+            row["name"]
+            for row in store._connection.execute(
+                "PRAGMA table_info(anonymous_survey_responses)"
+            ).fetchall()
+        }
+        self.assertEqual(columns, {"response_id", "ratings_json", "comment"})
+        self.assertTrue(store.survey_completed(account.id))
+        self.assertEqual(store.anonymous_survey_responses()[0]["comment"], "Optional note")
+
+    def test_survey_rating_validation(self):
+        self.assertEqual(validate_ratings([None] * 10), [None] * 10)
+        with self.assertRaisesRegex(ValueError, "exactly 10"):
+            validate_ratings([5])
+        with self.assertRaisesRegex(ValueError, "1–10"):
+            validate_ratings([0] * 10)
+
     def test_short_password_is_rejected(self):
         store = AccountStore(":memory:")
         self.addCleanup(store.close)
@@ -600,6 +669,8 @@ class AssetTests(unittest.TestCase):
         self.assertIn("TALK TRAIN", instructions)
         self.assertIn("Press any key to continue", instructions)
         self.assertIn("show_instructions", (static / "app.js").read_text())
+        self.assertIn('id="survey-dialog"', instructions)
+        self.assertIn("/api/survey/submit", (static / "app.js").read_text())
         self.assertNotIn('id="group-form"', instructions)
         self.assertLess(instructions.index("Create new account"), instructions.index("Log in</button>"))
 
@@ -609,6 +680,8 @@ class AssetTests(unittest.TestCase):
         script = (static / "instructor.js").read_text()
         self.assertIn("Instructor progress", page)
         self.assertIn("Knowledge checks", page)
+        self.assertIn("Anonymous survey results", page)
+        self.assertIn("survey_completed", script)
         self.assertIn("/api/instructor/progress", script)
         self.assertNotIn("localStorage", script)
 

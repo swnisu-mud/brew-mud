@@ -10,3 +10,5 @@ Quest actions are fictionalized for play—enzymes and small molecules speak and
 
 Browser accounts store a display name, a salted PBKDF2 password hash, and serialized game progress. The application does not request email addresses or real student names.
 The password-protected instructor page can display account names, aggregate progression, and last-activity times. It does not display password data or player chat. Students must tell the instructor which player-chosen account name is theirs if progress is used for extra credit.
+
+Survey completion is recorded on each account, but survey ratings and optional comments are written to a separate table without an account ID, name, rank, activity, IP address, or submission time. The instructor dashboard suppresses survey answers and comments until at least five responses exist. Free-text content can still identify its author, so students are warned not to include identifying details.

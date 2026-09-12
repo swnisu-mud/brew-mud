@@ -19,6 +19,20 @@ tr.online td:first-child::before { content: "●"; color: var(--reward); margin-
 tr:not(.online) td:first-child::before { content: "○"; color: var(--muted); margin-right: .5rem; }
 .empty-row { color: var(--muted); text-align: center; }
 .privacy-note { margin: 1rem 0 0; }
+.survey-results { margin-top: 2.25rem; padding-top: 1.75rem; border-top: 1px solid var(--line); }
+.survey-results h2 { color: var(--bright); }
+.survey-results h3 { margin-top: 1.7rem; color: var(--cyan); }
+.survey-withheld {
+  padding: 1rem; color: var(--amber); background: rgba(255, 209, 102, .07);
+  border: 1px solid var(--line);
+}
+.survey-table { white-space: normal; }
+.survey-table th:first-child, .survey-table td:first-child { min-width: 30rem; line-height: 1.4; }
+.survey-comments { display: grid; gap: .75rem; }
+.survey-comments blockquote {
+  margin: 0; padding: .9rem 1rem; color: var(--ink); background: rgba(8, 13, 8, .48);
+  border-left: .25rem solid var(--cyan); line-height: 1.5; white-space: pre-wrap;
+}
 
 @media (max-width: 700px) {
   .instructor-login-form { grid-template-columns: 1fr; }

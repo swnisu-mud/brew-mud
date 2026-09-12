@@ -102,9 +102,35 @@
         <input id="command" autocomplete="off" spellcheck="false" aria-label="Command">
         <button type="submit">Send</button>
       </form>
-      <p class="shortcut">Try <code>look</code>, <code>map</code>, <code>who</code>, <code>say hello</code>, or <code>help</code>.</p>
+      <p class="shortcut">Try <code>look</code>, <code>map</code>, <code>who</code>, <code>say hello</code>, <code>survey</code>, or <code>help</code>.</p>
     </section>
   </main>
+  <dialog id="survey-dialog" class="survey-dialog" aria-labelledby="survey-title">
+    <form id="survey-form">
+      <div class="survey-heading">
+        <div>
+          <p class="eyebrow">Anonymous course evaluation</p>
+          <h2 id="survey-title">How did BrewMUD work as a study guide?</h2>
+        </div>
+        <button id="survey-close" class="survey-close" type="button" aria-label="Close survey">×</button>
+      </div>
+      <p class="survey-privacy">
+        Completing this form is recorded on your account, but your answers are stored separately
+        without your account name, rank, activity, or submission time. Do not include identifying
+        information in the optional comment.
+      </p>
+      <p id="survey-scale" class="survey-scale"></p>
+      <div id="survey-questions" class="survey-questions"></div>
+      <label for="survey-comment" class="survey-comment-label">Optional comment</label>
+      <p class="survey-comment-prompt">What helped most, what frustrated you, or what should change?</p>
+      <textarea id="survey-comment" rows="5"></textarea>
+      <p id="survey-error" class="error" role="alert"></p>
+      <div class="survey-actions">
+        <button id="survey-cancel" class="secondary-button" type="button">Finish later</button>
+        <button type="submit">Submit anonymous evaluation</button>
+      </div>
+    </form>
+  </dialog>
   <script src="/app.js"></script>
 </body>
 </html>

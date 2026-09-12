@@ -113,6 +113,13 @@ class RequestHandler(BaseHTTPRequestHandler):
             except KeyError as exc:
                 self._json({"error": str(exc)}, HTTPStatus.UNAUTHORIZED)
             return
+        if parsed.path == "/api/survey":
+            token = parse_qs(parsed.query).get("token", [""])[0]
+            try:
+                self._json(self.server.world.survey_form(token))
+            except KeyError as exc:
+                self._json({"error": str(exc)}, HTTPStatus.UNAUTHORIZED)
+            return
         if parsed.path == "/api/status":
             self._json({"players": self.server.world.player_count(),
                         "account_storage": self.server.storage_mode})
@@ -156,11 +163,31 @@ class RequestHandler(BaseHTTPRequestHandler):
                 output = self.server.world.command(str(body.get("token", "")), str(body.get("command", "")))
                 token = str(body.get("token", ""))
                 self._json({"output": output,
+                            "open_survey": output.startswith("SURVEY READY"),
                             "awaiting_continue": self.server.world.awaiting_continue(token),
                             "progress": self.server.world.player_progression(token),
                             "side_panel": self.server.world.player_side_panel(token)})
             except KeyError as exc:
                 self._json({"error": str(exc)}, HTTPStatus.UNAUTHORIZED)
+            return
+        if self.path == "/api/survey/submit":
+            try:
+                self.server.world.submit_survey(
+                    str(body.get("token", "")),
+                    body.get("ratings"),
+                    body.get("comment", ""),
+                )
+                self._json({
+                    "ok": True,
+                    "message": (
+                        "SURVEY COMPLETE — Thank you. Your account records completion, "
+                        "but your answers are stored without your account name."
+                    ),
+                })
+            except KeyError as exc:
+                self._json({"error": str(exc)}, HTTPStatus.UNAUTHORIZED)
+            except ValueError as exc:
+                self._json({"error": str(exc)}, HTTPStatus.BAD_REQUEST)
             return
         if self.path == "/api/logout":
             try:
@@ -181,7 +208,10 @@ class RequestHandler(BaseHTTPRequestHandler):
             ):
                 self._json({"error": "Incorrect instructor password."}, HTTPStatus.UNAUTHORIZED)
                 return
-            self._json({"players": self.server.world.instructor_progress()})
+            self._json({
+                "players": self.server.world.instructor_progress(),
+                "survey": self.server.world.instructor_survey_summary(),
+            })
             return
         self._json({"error": "Not found"}, HTTPStatus.NOT_FOUND)
 

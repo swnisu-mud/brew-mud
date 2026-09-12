@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .models import GameState
+from .survey import validate_comment, validate_ratings
 
 
 PASSWORD_ITERATIONS = 600_000
@@ -32,6 +33,7 @@ class AccountProgress:
     state: GameState
     created_at: str
     updated_at: str
+    survey_completed: bool
 
 
 class AccountStore:
@@ -58,6 +60,24 @@ class AccountStore:
                     created_at TEXT NOT NULL,
                     updated_at TEXT NOT NULL
                 )"""
+            )
+            columns = {
+                str(row["name"])
+                for row in self._connection.execute("PRAGMA table_info(accounts)").fetchall()
+            }
+            if "survey_completed" not in columns:
+                self._connection.execute(
+                    "ALTER TABLE accounts ADD COLUMN survey_completed "
+                    "INTEGER NOT NULL DEFAULT 0 CHECK (survey_completed IN (0, 1))"
+                )
+            # Survey answers deliberately contain no account ID, name, submission
+            # time, rank, or IP address. The random key only distinguishes rows.
+            self._connection.execute(
+                """CREATE TABLE IF NOT EXISTS anonymous_survey_responses (
+                    response_id TEXT PRIMARY KEY,
+                    ratings_json TEXT NOT NULL,
+                    comment TEXT NOT NULL
+                ) WITHOUT ROWID"""
             )
 
     def register(self, name: str, password: str) -> Account:
@@ -116,7 +136,7 @@ class AccountStore:
     def list_progress(self) -> list[AccountProgress]:
         with self._lock:
             rows = self._connection.execute(
-                "SELECT id, name, state_json, created_at, updated_at "
+                "SELECT id, name, state_json, created_at, updated_at, survey_completed "
                 "FROM accounts ORDER BY name_key"
             ).fetchall()
         progress = []
@@ -128,8 +148,65 @@ class AccountStore:
                 state=state,
                 created_at=str(row["created_at"]),
                 updated_at=str(row["updated_at"]),
+                survey_completed=bool(row["survey_completed"]),
             ))
         return progress
+
+    def survey_completed(self, account_id: int) -> bool:
+        with self._lock:
+            row = self._connection.execute(
+                "SELECT survey_completed FROM accounts WHERE id = ?", (account_id,)
+            ).fetchone()
+        if row is None:
+            raise KeyError("Account no longer exists.")
+        return bool(row["survey_completed"])
+
+    def submit_survey(
+        self,
+        account_id: int,
+        ratings: object,
+        comment: object,
+    ) -> None:
+        """Atomically record one anonymous response and mark account completion.
+
+        The account is consulted and updated in the same transaction, but its ID
+        is never written to the response table.
+        """
+        checked_ratings = validate_ratings(ratings)
+        checked_comment = validate_comment(comment)
+        with self._lock, self._connection:
+            row = self._connection.execute(
+                "SELECT survey_completed FROM accounts WHERE id = ?", (account_id,)
+            ).fetchone()
+            if row is None:
+                raise KeyError("Account no longer exists.")
+            if bool(row["survey_completed"]):
+                raise ValueError("This account has already completed the survey.")
+            self._connection.execute(
+                """INSERT INTO anonymous_survey_responses
+                   (response_id, ratings_json, comment) VALUES (?, ?, ?)""",
+                (
+                    secrets.token_hex(16),
+                    json.dumps(checked_ratings, separators=(",", ":")),
+                    checked_comment,
+                ),
+            )
+            self._connection.execute(
+                "UPDATE accounts SET survey_completed = 1 WHERE id = ?", (account_id,)
+            )
+
+    def anonymous_survey_responses(self) -> list[dict[str, object]]:
+        with self._lock:
+            rows = self._connection.execute(
+                "SELECT ratings_json, comment FROM anonymous_survey_responses"
+            ).fetchall()
+        responses: list[dict[str, object]] = []
+        for row in rows:
+            responses.append({
+                "ratings": validate_ratings(json.loads(str(row["ratings_json"]))),
+                "comment": str(row["comment"]),
+            })
+        return responses
 
     def close(self) -> None:
         with self._lock:

@@ -9,6 +9,15 @@ from pathlib import Path
 
 from .accounts import Account, AccountStore
 from .game import Game
+from .survey import (
+    SURVEY_COMMENT_LIMIT,
+    SURVEY_MINIMUM_RESULTS,
+    SURVEY_QUESTIONS,
+    SURVEY_SCALE_HIGH_LABEL,
+    SURVEY_SCALE_LOW_LABEL,
+    SURVEY_SCALE_MAX,
+    SURVEY_SCALE_MIN,
+)
 
 
 @dataclass
@@ -99,6 +108,14 @@ class MUDServer:
                 return self._group_say(token, argument)
             if verb.lower() == "who":
                 return self._who(token)
+            if verb.lower() in {"survey", "evaluate"}:
+                if session.game.state.active_quiz is not None:
+                    return "Finish the current pop quiz or type PAUSE before opening the survey."
+                if session.game.awaiting_quiz_continue:
+                    return "Press any key to continue from the pop quiz before opening the survey."
+                if self._accounts.survey_completed(session.account_id):
+                    return "SURVEY COMPLETE — This account has already submitted the course evaluation."
+                return "SURVEY READY — The anonymous course evaluation is opening."
             if verb.lower() == "follow":
                 if not self.following_enabled:
                     return "Following is disabled in this study-guide version. You can still explore and use SAY together."
@@ -112,6 +129,7 @@ class MUDServer:
                     session.game.help()
                     + "\n  SAY <message>       Speak to players in your room"
                     + "\n  WHO                 List nearby and online players"
+                    + "\n  SURVEY              Open the anonymous course evaluation"
                     + "\n  RESTART             Start the two-step personal progress reset"
                 )
                 if self.following_enabled:
@@ -181,6 +199,25 @@ class MUDServer:
             session = self._players.get(token)
             return session.game.side_panel_data() if session else None
 
+    def survey_form(self, token: str) -> dict[str, object]:
+        """Return public survey wording for one authenticated player."""
+        with self._lock:
+            session = self._require(token)
+            return {
+                "completed": self._accounts.survey_completed(session.account_id),
+                "questions": list(SURVEY_QUESTIONS),
+                "scale_min": SURVEY_SCALE_MIN,
+                "scale_max": SURVEY_SCALE_MAX,
+                "scale_low_label": SURVEY_SCALE_LOW_LABEL,
+                "scale_high_label": SURVEY_SCALE_HIGH_LABEL,
+                "comment_limit": SURVEY_COMMENT_LIMIT,
+            }
+
+    def submit_survey(self, token: str, ratings: object, comment: object) -> None:
+        with self._lock:
+            session = self._require(token)
+            self._accounts.submit_survey(session.account_id, ratings, comment)
+
     def instructor_progress(self) -> list[dict[str, object]]:
         """Return the same progression fields players see with LEVEL."""
         with self._lock:
@@ -194,9 +231,46 @@ class MUDServer:
                     "name": account.name,
                     "updated_at": account.updated_at,
                     "online": account.id in live_states,
+                    "survey_completed": account.survey_completed,
                 })
                 report.append(row)
             return report
+
+    def instructor_survey_summary(self) -> dict[str, object]:
+        """Aggregate anonymous responses, withholding small result sets."""
+        with self._lock:
+            responses = self._accounts.anonymous_survey_responses()
+        submitted = len(responses)
+        if submitted < SURVEY_MINIMUM_RESULTS:
+            return {
+                "submitted": submitted,
+                "minimum_to_display": SURVEY_MINIMUM_RESULTS,
+                "withheld": True,
+                "questions": [],
+                "comments": [],
+            }
+
+        question_summaries = []
+        for index, question in enumerate(SURVEY_QUESTIONS):
+            values = []
+            for response in responses:
+                ratings = response["ratings"]
+                if isinstance(ratings, list) and ratings[index] is not None:
+                    values.append(ratings[index])
+            question_summaries.append({
+                "question": question,
+                "responses": len(values),
+                "average": round(sum(values) / len(values), 1) if values else None,
+            })
+        comments = [str(response["comment"]) for response in responses if response["comment"]]
+        secrets.SystemRandom().shuffle(comments)
+        return {
+            "submitted": submitted,
+            "minimum_to_display": SURVEY_MINIMUM_RESULTS,
+            "withheld": False,
+            "questions": question_summaries,
+            "comments": comments,
+        }
 
     def close(self) -> None:
         with self._lock:

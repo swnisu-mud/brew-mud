@@ -48,6 +48,7 @@
               <th>Quests</th>
               <th>Knowledge checks</th>
               <th>Next rank</th>
+              <th>Survey</th>
               <th>Last active</th>
             </tr>
           </thead>
@@ -55,6 +56,29 @@
         </table>
       </div>
       <p class="privacy-note">Account names are player-chosen. Ask students to tell you which account belongs to them.</p>
+
+      <section class="survey-results" aria-labelledby="survey-results-title">
+        <h2 id="survey-results-title">Anonymous survey results</h2>
+        <p id="survey-summary" class="progress-summary"></p>
+        <p id="survey-withheld" class="survey-withheld" hidden></p>
+        <div id="survey-results-content" hidden>
+          <div class="table-wrap">
+            <table class="survey-table">
+              <thead>
+                <tr>
+                  <th>Question (1 = strongly disagree; 10 = strongly agree)</th>
+                  <th>Responses</th>
+                  <th>Average</th>
+                </tr>
+              </thead>
+              <tbody id="survey-result-rows"></tbody>
+            </table>
+          </div>
+          <h3>Optional comments</h3>
+          <div id="survey-comments" class="survey-comments"></div>
+        </div>
+        <p class="privacy-note">Responses are not linked to account names, ranks, activity, or submission times. Results remain hidden until at least five students respond.</p>
+      </section>
     </section>
   </main>
   <script src="/instructor.js"></script>

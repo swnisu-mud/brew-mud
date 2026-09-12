@@ -231,8 +231,15 @@ The sound and screen flash are only alerts; the important part is the question a
 | `NOTES` | Review biochemical facts recorded during exploration |
 | `WHO` | See nearby and currently connected players |
 | `SAY message` | Speak to other students in your current room |
+| `SURVEY` or `EVALUATE` | Open the optional anonymous course evaluation |
 | `HELP` | Display the complete command list |
 | `QUIT` | End the current session; progress remains saved |
+
+## Course evaluation
+
+Enter `SURVEY` or `EVALUATE` in the game to open a short evaluation. It contains ten optional 1–10 ratings and one optional comment. A rating of 1 means **strongly disagree**, and 10 means **strongly agree**.
+
+The game records that your account completed the evaluation, but stores your answers separately without your account name, rank, activity, or submission time. Do not put your name or other identifying details in the optional comment. Anonymous results will not appear in the instructor report until at least five students have responded.
 
 ## A good study strategy
 

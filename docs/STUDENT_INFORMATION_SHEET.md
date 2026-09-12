@@ -190,8 +190,24 @@ Regional transitions: Microbiology Laboratory leads **OUT** to the Yeast Laborat
 
 The quests form a sequence through malting, water chemistry, carbohydrate and starch structure, protein structure, enzyme and amylase behavior, mashing, and lautering. You may explore anywhere, but you can have only one active quest at a time, and later quests unlock after earlier ones are completed.
 
+### First-exam quest path
+
+The seven first-exam quests contain 42 required objectives. They are designed to build one connected explanation from raw barley to separated wort.
+
+| Quest | What you will investigate | Steps |
+|---|---|---:|
+| **First Day in the Brewery** | Follow the broad grain-to-wort route and meet the people responsible for each major stage | 7 |
+| **Wake the Sleeping Grain** | Diagnose uneven germination by tracing hydration, gibberellic-acid signaling, aleurone enzymes, and endosperm modification | 5 |
+| **A Tale of Two Ions** | Separate pH, alkalinity, and hardness while correcting bicarbonate and sulfate/chloride balance | 6 |
+| **Rebuild the Carbohydrate Map** | Connect glucose and maltose to amylose, amylopectin, starch packing, and gelatinization | 7 |
+| **The Enzyme That Lost Its Shape** | Connect amino-acid chains and protein folding to denaturation, active sites, temperature and pH optima, and alpha- versus beta-amylase | 7 |
+| **The Stalled Mash** | Use milling, gelatinization, pH, and amylase evidence to diagnose an iodine-dark production mash | 6 |
+| **The Stuck Runoff** | Restore wort flow by understanding husk-supported filtration, vorlauf, sparging, channeling, and bed compaction | 4 |
+
+Completing **The Stuck Runoff** marks the end of the first-exam quest material. **The Vanishing Hop Aroma** and the quests that follow introduce later course material. The other residents and rooms in the first-exam regions remain useful for optional review and additional pop quizzes.
+
 - `TALK name` starts or advances a quest when that resident is involved.
-- The short **Objectives** line in each room reminds you what to do next.
+- The **Active quest** section beside the game window shows the current problem and objective.
 - `JOURNAL` shows your current assignment or explains the next problem that needs attention.
 - `HINT` gives directions to the resident needed for the current objective.
 - `LEVEL` or `STATUS` shows your Insight, rank, locations explored, completed quests, and completed knowledge checks.

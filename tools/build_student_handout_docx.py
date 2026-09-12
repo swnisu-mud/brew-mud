@@ -204,7 +204,15 @@ class DocumentBuilder:
         set_val(description, f"A reference table with columns: {', '.join(headers)}")
 
         grid = ET.SubElement(table, w("tblGrid"))
-        for grid_width in ("2600", "6200"):
+        preferred_widths = {
+            2: ("2600", "6200"),
+            3: ("2200", "5200", "1400"),
+            4: ("1800", "1800", "2400", "2800"),
+        }
+        grid_widths = preferred_widths.get(
+            len(headers), tuple(str(8800 // len(headers)) for _ in headers)
+        )
+        for grid_width in grid_widths:
             column = ET.SubElement(grid, w("gridCol"))
             column.set(w("w"), grid_width)
 

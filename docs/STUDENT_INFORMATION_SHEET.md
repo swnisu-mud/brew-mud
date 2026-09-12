@@ -6,7 +6,7 @@ BrewMUD is a substitute for a typical study guide for our material on malting, c
 
 **Questions on the test will come directly from room and object descriptions, conversations with NPCs, and pop quizzes in BrewMUD.** Read the text carefully. Finishing a quest quickly is not as useful as understanding what the rooms, objects, and characters are telling you.
 
-Course link: ________________________________________________
+Course link: **https://brew-mud.onrender.com**
 
 ## A very short history of MUDs
 
@@ -240,6 +240,28 @@ The sound and screen flash are only alerts; the important part is the question a
 Enter `SURVEY` or `EVALUATE` in the game to open a short evaluation. It contains ten optional 1–10 ratings and one optional comment. A rating of 1 means **strongly disagree**, and 10 means **strongly agree**.
 
 The game records that your account completed the evaluation, but stores your answers separately without your account name, rank, activity, or submission time. Do not put your name or other identifying details in the optional comment. Anonymous results will not appear in the instructor report until at least five students have responded.
+
+## Optional game-testing extra credit
+
+You may earn up to **20 extra-credit points** by using BrewMUD as a study guide and helping evaluate it. Your points are based on the highest rank shown by the `LEVEL` command at the deadline.
+
+| Rank reached | Extra-credit points |
+|---|---:|
+| Brewery Visitor | 0 |
+| Brewery Trainee | 3 |
+| Malt House Hand | 6 |
+| Maltings Specialist | 9 |
+| Water Chemistry Assistant | 12 |
+| Carbohydrate Analyst | 15 |
+| Enzyme Technician | 18 |
+| Brewhouse Operator or any higher rank | 20 |
+
+To receive points:
+
+1. Report your BrewMUD account name to your instructor by **[deadline]**.
+2. Enter `SURVEY` or `EVALUATE` and submit the course evaluation by that deadline. You may leave individual ratings or the optional comment unanswered.
+
+The instructor can see your account name, rank, and whether you submitted the evaluation. The instructor cannot connect your account to your ratings or comment. Submitting the evaluation is required for game-testing credit, but expressing any particular opinion is not.
 
 ## A good study strategy
 

@@ -219,8 +219,8 @@ When a quest ends, read the **NEXT LEAD** message. It explains the next brewery 
 Pop quizzes appear while you explore, but they test a location you visited previously—not the room you have just entered. Answer by entering only `A`, `B`, `C`, or `D`. The answer positions are randomized.
 
 - If you answer correctly, read the complete explanation before pressing a key to continue. Like the descriptions and NPC conversations, these explanations are test material.
-- If you are unsure, enter `PAUSE`. The room will appear so you can investigate, use your map, or discuss the question with a classmate. Enter `QUIZ` or `RESUME` when you are ready to try again.
-- An incorrect answer costs 2 Insight and pauses the quiz. Use the route provided to revisit the relevant location before answering again.
+- If you are unsure, enter `PAUSE`. The room will appear so you can use `NOTES`, revisit the relevant area, consult your map, or discuss the question with a classmate. Enter `QUIZ` or `RESUME` when you are ready to try again.
+- An incorrect answer costs 2 Insight and pauses the quiz. Use `NOTES` or the provided route to review the relevant material before answering again.
 
 The sound and screen flash are only alerts; the important part is the question and its explanation.
 

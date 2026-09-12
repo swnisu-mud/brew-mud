@@ -14,8 +14,22 @@ from .regional_maps import compact_map_data, render_map
 from .world import AMBIENT_SPEECH, DIRECTION_ALIASES, FACTS, ITEMS, NPCS, ROOMS
 
 
-RANKS = ((0,"Brewery Visitor"), (20,"Malt House Hand"), (60,"Brewhouse Apprentice"),
-         (120,"Fermentation Technician"), (220,"Brewery Biochemist"), (360,"Master Brewer"))
+RANKS = (
+    (0, "Brewery Visitor"),
+    (25, "Brewery Trainee"),
+    (75, "Malt House Hand"),
+    (140, "Maltings Specialist"),
+    (220, "Water Chemistry Assistant"),
+    (300, "Carbohydrate Analyst"),
+    (400, "Enzyme Technician"),
+    (500, "Brewhouse Operator"),
+    (600, "Hop Specialist"),
+    (700, "Fermentation Technician"),
+    (800, "Cellar Biochemist"),
+    (875, "Quality Laboratory Analyst"),
+    (950, "Brewery Biochemist"),
+    (1000, "Master Brewer"),
+)
 POP_QUIZ_INITIAL_DELAY = 4
 POP_QUIZ_COOLDOWN = 4
 POP_QUIZ_GUARANTEE = 7
@@ -373,14 +387,15 @@ class Game:
         order = self._quiz_order(question)
         options = "\n".join(f"  {chr(65+i)}. {question.options[o]}" for i,o in enumerate(order))
         return (f"KNOWLEDGE CHECK — review topic: {ROOMS[key].name}\n{question.prompt}\n{options}\n"
-                "Type A, B, C, or D. Type PAUSE to revisit the relevant area.")
+                "Type A, B, C, or D. Not sure? Type PAUSE, then use NOTES or revisit the relevant area.")
 
     def pause_quiz(self) -> str:
         key = self.state.active_quiz
         if key is None:
             return f"The {ROOMS[self.state.paused_quiz].name} check is already paused. Type QUIZ to resume." if self.state.paused_quiz else "No pop quiz is active."
         self.state.active_quiz, self.state.paused_quiz = None, key
-        return (f"Knowledge check paused. Review topic: {ROOMS[key].name}. Explore, discuss, then type QUIZ or RESUME."
+        return (f"Knowledge check paused. Review topic: {ROOMS[key].name}. Use NOTES, revisit the area, "
+                "or discuss it with another player; then type QUIZ or RESUME."
                 + self._reveal_pending_room())
 
     def pop_quiz_candidates(self) -> set[str]:
@@ -419,7 +434,8 @@ class Game:
             self.state.insight -= lost
             return (f"Not quite. {question.feedback[original]}\n\nINSIGHT -{lost} — total {self.state.insight}.\n"
                     "The check is paused so you can investigate before guessing again.\n"
-                    f"{self._route_to(key)} Ask nearby players with SAY, then type QUIZ when ready."
+                    f"Use NOTES, or follow this route: {self._route_to(key)} "
+                    "Ask nearby players with SAY, then type QUIZ when ready."
                     + self._reveal_pending_room())
         self.state.completed_quizzes.add(key)
         self.state.active_quiz = self.state.paused_quiz = None

@@ -275,6 +275,15 @@ class CommandTests(unittest.TestCase):
             "Find and meet the Head Maltster.",
         )
 
+    def test_expanded_rank_ladder_reserves_master_brewer_for_late_progress(self):
+        self.game.state.insight = 418
+        self.assertEqual(self.game.rank, "Enzyme Technician")
+        self.assertIn("Brewhouse Operator at 500 Insight", self.game.progression())
+        self.game.state.insight = 999
+        self.assertEqual(self.game.rank, "Brewery Biochemist")
+        self.game.state.insight = 1000
+        self.assertEqual(self.game.rank, "Master Brewer")
+
     def test_head_maltster_welcomes_player_and_explains_next_step(self):
         self.game.talk("coordinator")
         self.game.state.room = "cure_floor"
@@ -345,6 +354,12 @@ class QuizTests(unittest.TestCase):
         displayed = game.state.quiz_option_order.index(QUIZZES["mash_tun"].correct)
         response = game.execute(chr(65 + displayed))
         self.assertIn("Correct.", response)
+
+    def test_quiz_and_pause_prompts_recommend_notes(self):
+        game = Game(pop_quizzes_enabled=False)
+        game.state.active_quiz = "mash_tun"
+        self.assertIn("use NOTES", game.quiz())
+        self.assertIn("Use NOTES", game.pause_quiz())
 
     def test_wrong_answer_costs_insight_and_pauses(self):
         game = Game(rng=random.Random(3), pop_quizzes_enabled=False)

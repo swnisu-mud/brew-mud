@@ -32,7 +32,7 @@ class WorldTests(unittest.TestCase):
         self.assertEqual(len(ROOMS), 90)
         self.assertGreaterEqual(len(NPCS), 111)
         self.assertEqual(len(QUESTS), 16)
-        self.assertGreaterEqual(sum(len(q.steps) for q in QUESTS.values()), 101)
+        self.assertGreaterEqual(sum(len(q.steps) for q in QUESTS.values()), 86)
         self.assertGreaterEqual(len(QUIZZES), 39)
 
     def test_world_connected_and_exits_reciprocal(self):
@@ -213,12 +213,14 @@ class CommandTests(unittest.TestCase):
         self.assertEqual(QUESTS["starch_structure"].requires, ("water_profile",))
         self.assertEqual(QUESTS["protein_enzymes"].requires, ("starch_structure",))
         self.assertEqual(QUESTS["stalled_mash"].requires, ("protein_enzymes",))
+        self.assertEqual(len(QUESTS["starch_structure"].steps), 7)
+        self.assertEqual(len(QUESTS["protein_enzymes"].steps), 7)
         game = Game(pop_quizzes_enabled=False)
         game.state.room = "carbohydrate_lab"
         game.state.completed_quests.update({"orientation", "malt_house", "water_profile"})
         response = game.talk("curator")
         self.assertIn("QUEST STARTED — Rebuild the Carbohydrate Map", response)
-        self.assertIn("Identify the monomer", response)
+        self.assertIn("Identify the building block", response)
 
     def test_completed_carbohydrate_quest_leads_to_enzyme_investigation(self):
         game = Game(pop_quizzes_enabled=False)
@@ -228,7 +230,7 @@ class CommandTests(unittest.TestCase):
         )
         response = game.talk("protein chemist")
         self.assertIn("QUEST STARTED — The Enzyme That Lost Its Shape", response)
-        self.assertIn("Identify the common building blocks", response)
+        self.assertIn("what proteins are built from", response)
 
     def test_existing_stalled_mash_save_returns_to_new_prerequisite(self):
         state = GameState(
@@ -251,6 +253,18 @@ class CommandTests(unittest.TestCase):
         self.assertEqual(game.state.quest_stages, {})
         self.assertEqual(game.reset_quest_titles, ["The Stalled Mash"])
         self.assertIn("The Enzyme That Lost Its Shape", game.journal())
+
+    def test_version_three_first_exam_quests_migrate_to_shorter_paths(self):
+        starch = GameState.from_dict({
+            "version": 3,
+            "quest_stages": {"starch_structure": 10},
+        })
+        enzyme = GameState.from_dict({
+            "version": 3,
+            "quest_stages": {"protein_enzymes": 14},
+        })
+        self.assertEqual(starch.quest_stages["starch_structure"], 6)
+        self.assertEqual(enzyme.quest_stages["protein_enzymes"], 5)
 
     def test_room_description_leaves_active_objective_in_side_panel(self):
         self.game.talk("training coordinator")

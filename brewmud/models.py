@@ -52,7 +52,7 @@ class GameState:
 
     def to_dict(self) -> dict[str, object]:
         return {
-            "version": 3, "room": self.room,
+            "version": 4, "room": self.room,
             "inventory": sorted(self.inventory), "taken_items": sorted(self.taken_items),
             "discovered_rooms": sorted(self.discovered_rooms),
             "learned_facts": sorted(self.learned_facts),
@@ -77,6 +77,21 @@ class GameState:
             quest_stages["orientation"] = {0: 0, 1: 2, 2: 5}.get(
                 quest_stages["orientation"], 6
             )
+        # Version 4 shortened two first-exam quests while preserving the key
+        # concepts. Move active players to the nearest equivalent new step.
+        if version < 4 and "starch_structure" in quest_stages:
+            old_stage = quest_stages["starch_structure"]
+            quest_stages["starch_structure"] = {
+                0: 0, 1: 1, 2: 2, 3: 2, 4: 2, 5: 3,
+                6: 4, 7: 4, 8: 4, 9: 5, 10: 6, 11: 6,
+            }.get(old_stage, 6)
+        if version < 4 and "protein_enzymes" in quest_stages:
+            old_stage = quest_stages["protein_enzymes"]
+            quest_stages["protein_enzymes"] = {
+                0: 0, 1: 1, 2: 1, 3: 1, 4: 1, 5: 2,
+                6: 3, 7: 3, 8: 4, 9: 5, 10: 5, 11: 5,
+                12: 5, 13: 5, 14: 5, 15: 5, 16: 6,
+            }.get(old_stage, 6)
         return cls(
             room=str(data.get("room", "brewery_gate")),
             inventory=set(data.get("inventory", [])),

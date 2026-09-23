@@ -8,3 +8,8 @@ brewmud.db-wal
 *.egg-info/
 dist/
 build/
+
+# Local assessment materials: never publish exams or answer keys to GitHub.
+docs/BBMB_1200_FIRST_EXAM*.md
+docs/BBMB_1200_First_Exam*.docx
+tools/build_first_exam_docx.py

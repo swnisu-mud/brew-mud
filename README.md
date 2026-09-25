@@ -14,6 +14,7 @@ This first playable build is based on the instructor's BBMB 1200 lecture materia
 - browser-based multiplayer presence and local room chat
 - first-arrival NPC chatter, colored semantic output, and quiz sound/screen flash
 - an optional ten-question anonymous evaluation with account-level completion tracking
+- automatic logout after 30 minutes without a player command, with progress saved
 
 ## Run it on this laptop
 
@@ -130,4 +131,4 @@ Set `BREWMUD_ADMIN_PASSWORD` to a strong, unique value in the Render service's *
 
 Students can enter `SURVEY` or `EVALUATE` to open a ten-question, 1–10 evaluation with an optional comment. Completion is stored on the account, while answers are placed in a separate table with no account ID, name, rank, activity, IP address, or submission time. The instructor dashboard reports who completed the survey but displays only anonymous aggregate answers and shuffled comments. Results remain suppressed until at least five responses have been submitted. Free-text comments can still identify their author by their content, so the form tells students not to provide identifying details.
 
-Player presence and chat remain in server memory, so a restart or redeploy disconnects current players. Account progress survives. Password reset and moderation are not included in this first account version.
+Player presence and chat remain in server memory, so a restart or redeploy disconnects current players. Sessions also log out automatically after 30 minutes without a player command; background browser polling does not count as activity. Progress is saved before an idle session is removed. Account progress survives. Password reset and moderation are not included in this first account version.

@@ -9,7 +9,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from .server import MUDServer
+from .server import IdleTimeoutError, MUDServer
 
 
 STATIC_DIR = Path(__file__).with_name("static")
@@ -110,6 +110,8 @@ class RequestHandler(BaseHTTPRequestHandler):
             token = parse_qs(parsed.query).get("token", [""])[0]
             try:
                 self._json({"messages": self.server.world.poll(token)})
+            except IdleTimeoutError as exc:
+                self._idle_timeout(exc)
             except KeyError as exc:
                 self._json({"error": str(exc)}, HTTPStatus.UNAUTHORIZED)
             return
@@ -117,6 +119,8 @@ class RequestHandler(BaseHTTPRequestHandler):
             token = parse_qs(parsed.query).get("token", [""])[0]
             try:
                 self._json(self.server.world.survey_form(token))
+            except IdleTimeoutError as exc:
+                self._idle_timeout(exc)
             except KeyError as exc:
                 self._json({"error": str(exc)}, HTTPStatus.UNAUTHORIZED)
             return
@@ -167,6 +171,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                             "awaiting_continue": self.server.world.awaiting_continue(token),
                             "progress": self.server.world.player_progression(token),
                             "side_panel": self.server.world.player_side_panel(token)})
+            except IdleTimeoutError as exc:
+                self._idle_timeout(exc)
             except KeyError as exc:
                 self._json({"error": str(exc)}, HTTPStatus.UNAUTHORIZED)
             return
@@ -184,6 +190,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                         "but your answers are stored without your account name."
                     ),
                 })
+            except IdleTimeoutError as exc:
+                self._idle_timeout(exc)
             except KeyError as exc:
                 self._json({"error": str(exc)}, HTTPStatus.UNAUTHORIZED)
             except ValueError as exc:
@@ -193,7 +201,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             try:
                 self.server.world.logout(str(body.get("token", "")))
                 self._json({"ok": True})
-            except KeyError:
+            except (IdleTimeoutError, KeyError):
                 self._json({"ok": True})
             return
         if self.path == "/api/instructor/progress":
@@ -223,6 +231,12 @@ class RequestHandler(BaseHTTPRequestHandler):
         if not isinstance(data, dict):
             raise ValueError("JSON body must be an object")
         return data
+
+    def _idle_timeout(self, exc: IdleTimeoutError) -> None:
+        self._json(
+            {"error": str(exc), "code": "idle_timeout"},
+            HTTPStatus.UNAUTHORIZED,
+        )
 
     def _json(self, data: dict[str, object], status: HTTPStatus = HTTPStatus.OK) -> None:
         encoded = json.dumps(data).encode("utf-8")

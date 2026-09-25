@@ -160,8 +160,36 @@ function appendHighlights(row, line) {
 async function api(path, options = {}) {
   const response = await fetch(path, options);
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error || "Request failed");
+  if (!response.ok) {
+    const error = new Error(data.error || "Request failed");
+    error.code = data.code;
+    throw error;
+  }
   return data;
+}
+
+function returnToLogin(message) {
+  if (pollTimer) window.clearInterval(pollTimer);
+  pollTimer = null;
+  token = null;
+  pendingWelcome = "";
+  awaitingQuizContinue = false;
+  document.removeEventListener("keydown", continueFromInstructions);
+  if (surveyDialog.open) surveyDialog.close();
+  document.querySelector("#instructions").hidden = true;
+  document.querySelector("#game").hidden = true;
+  document.querySelector("#login").hidden = false;
+  document.querySelector("#status").textContent = "logged out";
+  document.querySelector("#login-error").textContent = message;
+  const password = document.querySelector("#password");
+  password.value = "";
+  password.focus();
+}
+
+function handleSessionError(error) {
+  if (error.code !== "idle_timeout") return false;
+  returnToLogin(error.message);
+  return true;
 }
 
 async function openSurvey() {
@@ -205,6 +233,7 @@ async function openSurvey() {
     surveyDialog.showModal();
     document.querySelector("#survey-rating-0").focus();
   } catch (err) {
+    if (handleSessionError(err)) return;
     append(err.message, "error");
   }
 }
@@ -237,6 +266,7 @@ surveyForm.addEventListener("submit", async (event) => {
     closeSurvey();
     append(data.message, "reward");
   } catch (err) {
+    if (handleSessionError(err)) return;
     error.textContent = err.message;
   }
 });
@@ -248,6 +278,7 @@ function enterGame() {
   append(pendingWelcome);
   pendingWelcome = "";
   commandInput.focus();
+  if (pollTimer) window.clearInterval(pollTimer);
   pollTimer = window.setInterval(poll, 900);
 }
 
@@ -275,6 +306,7 @@ document.querySelector("#login-form").addEventListener("submit", async (event) =
       }),
     });
     token = data.token;
+    terminal.replaceChildren();
     pendingWelcome = data.output;
     awaitingQuizContinue = Boolean(data.awaiting_continue);
     updateProgress(data.progress);
@@ -312,6 +344,7 @@ document.querySelector("#command-form").addEventListener("submit", async (event)
     updateSidePanel(data.side_panel);
     if (data.open_survey) await openSurvey();
   } catch (err) {
+    if (handleSessionError(err)) return;
     append(err.message, "error");
   }
 });
@@ -332,6 +365,7 @@ document.addEventListener("keydown", async (event) => {
     updateProgress(data.progress);
     updateSidePanel(data.side_panel);
   } catch (err) {
+    if (handleSessionError(err)) return;
     awaitingQuizContinue = true;
     append(err.message, "error");
   }
@@ -343,6 +377,7 @@ async function poll() {
     const data = await api(`/api/events?token=${encodeURIComponent(token)}`);
     data.messages.forEach((message) => append(message, "social"));
   } catch (err) {
+    if (handleSessionError(err)) return;
     window.clearInterval(pollTimer);
     document.querySelector("#status").textContent = "disconnected";
     append(err.message, "error");

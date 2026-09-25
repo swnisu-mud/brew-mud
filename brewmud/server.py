@@ -3,9 +3,11 @@ from __future__ import annotations
 import re
 import secrets
 import threading
+import time
 from copy import deepcopy
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Callable
 
 from .accounts import Account, AccountStore
 from .game import Game
@@ -20,11 +22,19 @@ from .survey import (
 )
 
 
+IDLE_TIMEOUT_SECONDS = 30 * 60
+
+
+class IdleTimeoutError(Exception):
+    """Raised when a browser tries to use a session removed for inactivity."""
+
+
 @dataclass
 class PlayerSession:
     account_id: int
     name: str
     game: Game
+    last_activity: float
     messages: list[str] = field(default_factory=list)
     following: str | None = None
 
@@ -36,10 +46,22 @@ class MUDServer:
     belong to individual players; later party quests can live alongside them.
     """
 
-    def __init__(self, database_path: str | Path = "brewmud.db", *, following_enabled: bool = False) -> None:
+    def __init__(
+        self,
+        database_path: str | Path = "brewmud.db",
+        *,
+        following_enabled: bool = False,
+        idle_timeout_seconds: float = IDLE_TIMEOUT_SECONDS,
+        clock: Callable[[], float] | None = None,
+    ) -> None:
+        if idle_timeout_seconds <= 0:
+            raise ValueError("Idle timeout must be greater than zero.")
         self._players: dict[str, PlayerSession] = {}
+        self._idle_expired_tokens: set[str] = set()
         self._lock = threading.RLock()
         self._accounts = AccountStore(database_path)
+        self.idle_timeout_seconds = idle_timeout_seconds
+        self._clock = clock or time.monotonic
         # Retain the experimental follow/group implementation for a possible
         # future course mode without exposing it in the current study guide.
         self.following_enabled = following_enabled
@@ -54,12 +76,14 @@ class MUDServer:
     def register(self, requested_name: str, password: str) -> tuple[str, str]:
         name = self._normalized_name(requested_name)
         with self._lock:
+            self._expire_idle_sessions()
             account = self._accounts.register(name, password)
             return self._open_session(account, "Account created. Your progress will save automatically.")
 
     def login(self, requested_name: str, password: str) -> tuple[str, str]:
         name = self._normalized_name(requested_name)
         with self._lock:
+            self._expire_idle_sessions()
             account = self._accounts.authenticate(name, password)
             return self._open_session(account, "Welcome back. Your saved progress has been restored.")
 
@@ -67,7 +91,12 @@ class MUDServer:
         if any(player.account_id == account.id for player in self._players.values()):
             raise ValueError("That account is already logged in.")
         token = secrets.token_urlsafe(24)
-        session = PlayerSession(account.id, account.name, Game(state=account.state))
+        session = PlayerSession(
+            account.id,
+            account.name,
+            Game(state=account.state),
+            last_activity=self._clock(),
+        )
         self._players[token] = session
         self._broadcast(session.game.state.room, f"{account.name} checks in for a brewery shift.", exclude=token)
         if session.game.reset_quest_titles:
@@ -80,6 +109,7 @@ class MUDServer:
 
     def logout(self, token: str) -> None:
         with self._lock:
+            self._expire_idle_sessions()
             session = self._require(token)
             room = session.game.state.room
             name = session.name
@@ -90,10 +120,14 @@ class MUDServer:
 
     def command(self, token: str, raw_command: str) -> str:
         with self._lock:
+            self._expire_idle_sessions()
             session = self._require(token)
             command = raw_command.strip()
             if not command:
                 return ""
+            # Only deliberate player input resets the idle timer. Browser event
+            # polling and passive multiplayer messages do not count as activity.
+            session.last_activity = self._clock()
 
             verb, _, argument = command.partition(" ")
             if verb.casefold() in {"save", "load"}:
@@ -173,6 +207,7 @@ class MUDServer:
 
     def poll(self, token: str) -> list[str]:
         with self._lock:
+            self._expire_idle_sessions()
             session = self._require(token)
             messages = session.messages[:]
             session.messages.clear()
@@ -180,28 +215,33 @@ class MUDServer:
 
     def player_count(self) -> int:
         with self._lock:
+            self._expire_idle_sessions()
             return len(self._players)
 
     def awaiting_continue(self, token: str) -> bool:
         with self._lock:
+            self._expire_idle_sessions()
             session = self._players.get(token)
             return bool(session and session.game.awaiting_quiz_continue)
 
     def player_progression(self, token: str) -> dict[str, object] | None:
         """Return the live LEVEL summary for one authenticated player."""
         with self._lock:
+            self._expire_idle_sessions()
             session = self._players.get(token)
             return session.game.progression_data() if session else None
 
     def player_side_panel(self, token: str) -> dict[str, object] | None:
         """Return live quest and map context for one authenticated player."""
         with self._lock:
+            self._expire_idle_sessions()
             session = self._players.get(token)
             return session.game.side_panel_data() if session else None
 
     def survey_form(self, token: str) -> dict[str, object]:
         """Return public survey wording for one authenticated player."""
         with self._lock:
+            self._expire_idle_sessions()
             session = self._require(token)
             return {
                 "completed": self._accounts.survey_completed(session.account_id),
@@ -215,12 +255,15 @@ class MUDServer:
 
     def submit_survey(self, token: str, ratings: object, comment: object) -> None:
         with self._lock:
+            self._expire_idle_sessions()
             session = self._require(token)
+            session.last_activity = self._clock()
             self._accounts.submit_survey(session.account_id, ratings, comment)
 
     def instructor_progress(self) -> list[dict[str, object]]:
         """Return the same progression fields players see with LEVEL."""
         with self._lock:
+            self._expire_idle_sessions()
             live_states = {session.account_id: session.game.state
                            for session in self._players.values()}
             report = []
@@ -579,6 +622,11 @@ class MUDServer:
                 session.messages.append(message)
 
     def _require(self, token: str) -> PlayerSession:
+        if token in self._idle_expired_tokens:
+            raise IdleTimeoutError(
+                "You were logged out after 30 minutes without a game command. "
+                "Your progress was saved; log in again to continue."
+            )
         try:
             return self._players[token]
         except KeyError as exc:
@@ -586,3 +634,25 @@ class MUDServer:
 
     def _save_session(self, session: PlayerSession) -> None:
         self._accounts.save(session.account_id, session.game.state)
+
+    def _expire_idle_sessions(self) -> int:
+        """Save and remove sessions with no deliberate player input for 30 minutes."""
+        now = self._clock()
+        expired = [
+            token
+            for token, session in self._players.items()
+            if now - session.last_activity >= self.idle_timeout_seconds
+        ]
+        for token in expired:
+            session = self._players[token]
+            room = session.game.state.room
+            name = session.name
+            self._save_session(session)
+            self._end_follow_relationships(token)
+            del self._players[token]
+            self._idle_expired_tokens.add(token)
+            self._broadcast(
+                room,
+                f"{name} has been logged out after 30 minutes of inactivity.",
+            )
+        return len(expired)

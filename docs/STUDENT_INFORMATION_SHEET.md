@@ -24,7 +24,7 @@ MUDs flourished during the 1980s and 1990s, producing families such as DikuMUD, 
 4. Read the brief instructions shown when you first enter.
 5. At the command prompt, type `TALK TRAIN` to speak with the Training Coordinator and begin your first assignment.
 
-Your progress saves automatically after every command. You may log out and return later using the same account.
+Your progress saves automatically after every command. You may log out and return later using the same account. To keep the online-player list accurate, the game logs you out after 30 minutes without a command. Your saved progress is not lost; simply log in again to continue.
 
 ## How to learn from the game
 

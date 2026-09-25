@@ -19,7 +19,7 @@ from brewmud.models import GameState
 from brewmud.quests import QUESTS
 from brewmud.quizzes import QUIZZES
 from brewmud.regional_maps import REGIONAL_MAPS, ROOM_REGION, compact_map_data
-from brewmud.server import MUDServer
+from brewmud.server import IDLE_TIMEOUT_SECONDS, IdleTimeoutError, MUDServer
 from brewmud.survey import SURVEY_QUESTIONS, validate_ratings
 from brewmud.world import NPC_DESCRIPTIONS, NPC_DIALOGUE, NPCS, ROOMS
 
@@ -393,6 +393,45 @@ class QuizTests(unittest.TestCase):
 
 
 class MultiplayerTests(unittest.TestCase):
+    def test_idle_session_expires_after_30_minutes_and_saves_progress(self):
+        now = [100.0]
+        server = MUDServer(":memory:", clock=lambda: now[0])
+        self.addCleanup(server.close)
+        alice, _ = server.register("Alice", "barley-123")
+        server.command(alice, "talk coordinator")
+        bob, _ = server.register("Bob", "maltose-123")
+        server.poll(alice)
+        server.poll(bob)
+
+        now[0] += 1_000
+        server.command(bob, "look")
+        now[0] = 100.0 + IDLE_TIMEOUT_SECONDS - 1
+        self.assertEqual(server.poll(alice), [])
+
+        now[0] += 1
+        messages = server.poll(bob)
+        self.assertIn("Alice has been logged out after 30 minutes", "\n".join(messages))
+        self.assertEqual(server.player_count(), 1)
+        with self.assertRaisesRegex(IdleTimeoutError, "progress was saved"):
+            server.poll(alice)
+
+        restored, _ = server.login("Alice", "barley-123")
+        self.assertEqual(server._players[restored].game.state.quest_stages, {"orientation": 0})
+
+    def test_player_command_resets_idle_timer_but_polling_does_not(self):
+        now = [0.0]
+        server = MUDServer(":memory:", clock=lambda: now[0])
+        self.addCleanup(server.close)
+        token, _ = server.register("Alice", "barley-123")
+
+        now[0] = 1_000
+        server.command(token, "look")
+        now[0] = 1_000 + IDLE_TIMEOUT_SECONDS - 1
+        server.poll(token)
+        now[0] += 1
+        with self.assertRaises(IdleTimeoutError):
+            server.poll(token)
+
     def test_chat_presence_and_following(self):
         server = MUDServer(":memory:", following_enabled=True)
         self.addCleanup(server.close)
@@ -669,6 +708,8 @@ class AssetTests(unittest.TestCase):
         self.assertIn("TALK TRAIN", instructions)
         self.assertIn("Press any key to continue", instructions)
         self.assertIn("show_instructions", (static / "app.js").read_text())
+        self.assertIn("30 minutes without a game command", instructions)
+        self.assertIn('error.code !== "idle_timeout"', (static / "app.js").read_text())
         self.assertIn('id="survey-dialog"', instructions)
         self.assertIn("/api/survey/submit", (static / "app.js").read_text())
         self.assertNotIn('id="group-form"', instructions)

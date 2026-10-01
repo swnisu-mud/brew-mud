@@ -8,6 +8,301 @@ const terminal = document.querySelector("#terminal");
 const commandInput = document.querySelector("#command");
 const surveyDialog = document.querySelector("#survey-dialog");
 const surveyForm = document.querySelector("#survey-form");
+const scenePicture = document.querySelector("#scene-picture");
+const sceneHotspots = document.querySelector("#scene-hotspots");
+const sceneTalkActions = document.querySelector("#scene-talk-actions");
+const sceneCaption = document.querySelector("#scene-caption");
+const quizControls = document.querySelector("#quiz-controls");
+const sceneArt = {
+  brewery_gate: "/art/brewery-gate-with-npc.webp",
+  grain_receiving: "/art/grain-receiving-with-npc.webp",
+  barley_lab: "/art/barley-lab.webp",
+  steep_house: "/art/steep-house-with-npc.webp",
+  air_rest: "/art/air-rest.webp",
+  germination_floor: "/art/germination-floor.webp",
+  aleurone: "/art/aleurone.webp",
+  endosperm: "/art/endosperm.webp",
+  kiln: "/art/kiln-with-npc.webp",
+  cure_floor: "/art/malt-curing-floor-with-npc.webp",
+  water_lab: "/art/water-lab-with-npc.webp",
+  ph_bench: "/art/ph-bench.webp",
+  ion_gallery: "/art/ion-gallery.webp",
+  city_profiles: "/art/city-profiles-with-npc.webp",
+  treatment_bay: "/art/treatment-bay-with-npc.webp",
+  mill_room: "/art/mill-room-with-npc.webp",
+  mash_tun: "/art/mash-tun-with-npc.webp",
+  carbohydrate_lab: "/art/carbohydrate-lab-with-npc.webp",
+  glucose_bench: "/art/glucose-bench.webp",
+  disaccharide_gallery: "/art/disaccharide-gallery.webp",
+  polymer_comparison: "/art/polymer-comparison.webp",
+  gelatinization_chamber: "/art/gelatinization-chamber.webp",
+  crystallinity_lab: "/art/crystallinity-lab.webp",
+  amylose_helix: "/art/amylose-helix.webp",
+  amylopectin_arbor: "/art/amylopectin-arbor.webp",
+  protein_rest: "/art/protein-rest.webp",
+  beta_rest: "/art/beta-rest.webp",
+  alpha_rest: "/art/alpha-rest.webp",
+  conversion_bench: "/art/conversion-bench.webp",
+  mash_out: "/art/mash-out.webp",
+  amino_acid_gallery: "/art/amino-acid-gallery.webp",
+  peptide_bond_bench: "/art/peptide-bond-bench.webp",
+  protein_structure_gallery: "/art/protein-structure-gallery.webp",
+  folding_chamber: "/art/folding-chamber.webp",
+  denaturation_bay: "/art/denaturation-bay.webp",
+  enzyme_catalysis_lab: "/art/enzyme-catalysis-lab.webp",
+  active_site_workshop: "/art/active-site-workshop.webp",
+  enzyme_conditions_lab: "/art/enzyme-conditions-lab.webp",
+  amylase_mechanism_lab: "/art/amylase-mechanism-lab.webp",
+  mash_thickness_station: "/art/mash-thickness-station.webp",
+  accessory_enzyme_lab: "/art/accessory-enzyme-lab.webp",
+  iodine_test_alcove: "/art/iodine-test-alcove.webp",
+  lauter_tun: "/art/lauter-tun.webp",
+  grain_bed: "/art/grain-bed.webp",
+  sparge_arm: "/art/sparge-arm.webp",
+  wort_grant: "/art/wort-grant.webp",
+  kettle: "/art/kettle.webp",
+  hot_break: "/art/hot-break.webp",
+  hop_dosing: "/art/hop-dosing.webp",
+  whirlpool: "/art/whirlpool.webp",
+  heat_exchanger: "/art/heat-exchanger.webp",
+  oxygenation_station: "/art/oxygenation-station.webp",
+  pitching_deck: "/art/pitching-deck.webp",
+  ale_fermenter: "/art/ale-fermenter.webp",
+  lager_fermenter: "/art/lager-fermenter.webp",
+  yeast_lab: "/art/yeast-lab.webp",
+  yeast_membrane: "/art/yeast-membrane.webp",
+  maltose_gate: "/art/maltose-gate.webp",
+  maltase_bench: "/art/maltase-bench.webp",
+  glycolysis_lane: "/art/glycolysis-lane.webp",
+  nad_recycling: "/art/nad-recycling.webp",
+  lipid_workshop: "/art/lipid-workshop.webp",
+  ester_lab: "/art/ester-lab.webp",
+  diacetyl_rest: "/art/diacetyl-rest.webp",
+  sulfur_vent: "/art/sulfur-vent.webp",
+  maturation_cellar: "/art/maturation-cellar.webp",
+  hop_yard: "/art/hop-yard.webp",
+  female_cone: "/art/female-cone.webp",
+  lupulin_gland: "/art/lupulin-gland.webp",
+  alpha_acid_bench: "/art/alpha-acid-bench.webp",
+  oil_lab: "/art/oil-lab.webp",
+  ibu_station: "/art/ibu-station.webp",
+  dry_hop_gallery: "/art/dry-hop-gallery.webp",
+  lightstrike_booth: "/art/lightstrike-booth.webp",
+  brite_tank: "/art/brite-tank.webp",
+  carbonation_station: "/art/carbonation-station.webp",
+  bottle_line: "/art/bottle-line.webp",
+  canning_line: "/art/canning-line.webp",
+  nitrogen_tap: "/art/nitrogen-tap.webp",
+  foam_lab: "/art/foam-lab.webp",
+  sensory_room: "/art/sensory-room.webp",
+  style_taproom: "/art/style-taproom.webp",
+  cold_storage: "/art/cold-storage.webp",
+  shipping_dock: "/art/shipping-dock.webp",
+  microbiology_lab: "/art/microbiology-lab.webp",
+  sanitation_bay: "/art/sanitation-bay.webp",
+  qa_chemistry: "/art/qa-chemistry.webp",
+  yeast_bank: "/art/yeast-bank.webp",
+  pilot_brewery: "/art/pilot-brewery.webp",
+  training_classroom: "/art/training-classroom.webp",
+};
+const sceneObjectPositions = {
+  brewery_gate: [28, 70], grain_receiving: [25, 72], barley_lab: [43, 48],
+  steep_house: [31, 61], air_rest: [49, 56], germination_floor: [83, 69],
+  aleurone: [42, 38], endosperm: [52, 51], kiln: [78, 42],
+  cure_floor: [44, 55], water_lab: [51, 62], ph_bench: [49, 63],
+  ion_gallery: [52, 37], city_profiles: [25, 48], treatment_bay: [31, 52],
+  mill_room: [53, 54], mash_tun: [46, 62], carbohydrate_lab: [50, 64],
+  glucose_bench: [48, 63], disaccharide_gallery: [50, 55],
+};
+const exitArrows = {
+  north: "↑", south: "↓", east: "→", west: "←",
+  up: "↑", down: "↓", in: "↪", out: "↩",
+};
+let currentScene = null;
+let preferredView = "adventure";
+let sceneBusy = false;
+let sceneCaptionCommand = null;
+
+function setView(view) {
+  preferredView = view;
+  if (view === "text") hideSceneCaption();
+  const available = Boolean(currentScene && sceneArt[currentScene.key] && !currentScene.hidden);
+  const illustrated = view === "adventure";
+  document.querySelector("#game").classList.toggle("illustrated-mode", illustrated);
+  document.querySelector("#adventure").hidden = !illustrated || !available;
+  document.querySelector("#adventure-view-button").setAttribute("aria-pressed", String(illustrated));
+  document.querySelector("#text-view-button").setAttribute("aria-pressed", String(!illustrated));
+  const note = document.querySelector("#adventure-availability");
+  note.textContent = currentScene?.hidden ? "Finish or pause the quiz to see the room."
+    : available ? "Click to play. Switch to Classic text anytime."
+      : "The room illustration is unavailable; use the action buttons or Classic text.";
+}
+
+document.querySelector("#adventure-view-button").addEventListener("click", () => setView("adventure"));
+document.querySelector("#text-view-button").addEventListener("click", () => {
+  setView("text");
+  commandInput.focus();
+});
+
+function updateScene(scene) {
+  hideSceneCaption();
+  currentScene = scene;
+  sceneHotspots.replaceChildren();
+  sceneTalkActions.replaceChildren();
+  if (scene && !scene.hidden && sceneArt[scene.key]) {
+    document.querySelector("#scene-title").textContent = scene.name;
+    scenePicture.src = sceneArt[scene.key];
+    scenePicture.alt = `Illustration of ${scene.name}; interactive targets are labeled on the picture.`;
+    scene.npcs.forEach((npc) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = `Talk to ${npc.name}`;
+      button.addEventListener("click", () => sendGameCommand(`talk ${npc.key}`, `Talking to ${npc.name}`));
+      sceneTalkActions.appendChild(button);
+    });
+    scene.features.forEach((feature, index) => {
+      const [x, y] = sceneObjectPositions[scene.key] || [33, 66];
+      addHotspot("object", feature, `look ${feature}`, x + index * 12, y);
+    });
+    scene.exits.forEach((exit) => {
+      const point = exitPoint(exit.direction);
+      addHotspot("exit", `${exit.direction.toUpperCase()} ${exitArrows[exit.direction]} ${exit.name}`,
+        exit.direction, point.x, point.y);
+    });
+    updateScenePlayers(scene.players);
+  }
+  setView(preferredView);
+}
+
+function updateInteraction(interaction, output = "") {
+  const mode = interaction?.mode || "explore";
+  quizControls.hidden = mode === "explore";
+  quizControls.dataset.mode = mode;
+  const topic = document.querySelector("#quiz-topic");
+  const prompt = document.querySelector("#quiz-prompt");
+  const feedback = document.querySelector("#quiz-feedback");
+  const options = document.querySelector("#quiz-options");
+  const actions = document.querySelector("#quiz-actions");
+  options.replaceChildren();
+  actions.replaceChildren();
+  feedback.hidden = true;
+  if (mode === "explore") return;
+  topic.textContent = mode === "continue" ? "Knowledge check complete" : `Knowledge check · ${interaction.topic}`;
+  prompt.textContent = mode === "active" ? interaction.prompt
+    : mode === "paused" ? "Quiz paused — review the topic, then resume."
+      : "Read the explanation, then reveal the room.";
+  if ((mode === "continue" || mode === "paused") && output) {
+    feedback.textContent = output;
+    feedback.hidden = false;
+  }
+  function addAction(label, command) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = label;
+    button.addEventListener("click", () => sendGameCommand(command, command === "notes" ? label : ""));
+    actions.appendChild(button);
+  }
+  if (mode === "active") {
+    interaction.options.forEach((choice) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      const letter = document.createElement("span");
+      letter.className = "quiz-option-letter";
+      letter.textContent = `${choice.letter}.`;
+      button.append(letter, document.createTextNode(choice.text));
+      button.addEventListener("click", () => sendGameCommand(choice.letter));
+      options.appendChild(button);
+    });
+    addAction("Pause and review", "pause");
+  } else if (mode === "paused") {
+    addAction("Resume quiz", "quiz");
+    addAction("Read notes", "notes");
+  } else if (mode === "continue") {
+    addAction("Continue to room", "continue");
+  }
+}
+
+document.querySelectorAll("#click-actions [data-command]").forEach((button) => {
+  button.addEventListener("click", () => {
+    const command = button.dataset.command;
+    sendGameCommand(command, command === "survey" ? "" : button.textContent);
+  });
+});
+
+document.querySelector("#leave-game").addEventListener("click", async () => {
+  if (!token || sceneBusy) return;
+  sceneBusy = true;
+  try {
+    await api("/api/logout", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({token}),
+    });
+    returnToLogin("You left the brewery. Your progress is saved.");
+  } catch (err) {
+    if (handleSessionError(err)) return;
+    append(err.message, "error");
+  } finally {
+    sceneBusy = false;
+  }
+});
+
+function updateScenePlayers(players) {
+  document.querySelector("#scene-players").textContent = players?.length
+    ? `Other players here: ${players.join(", ")}` : "";
+}
+
+function hideSceneCaption() {
+  sceneCaption.hidden = true;
+  sceneCaptionCommand = null;
+}
+
+function showSceneCaption(title, content) {
+  if (!currentScene || currentScene.hidden || !sceneArt[currentScene.key] || !content) return;
+  document.querySelector("#scene-caption-title").textContent = title;
+  document.querySelector("#scene-caption-text").textContent = content;
+  sceneCaption.hidden = false;
+  sceneCaption.scrollTop = 0;
+}
+
+document.querySelector("#scene-caption-close").addEventListener("click", hideSceneCaption);
+sceneCaption.addEventListener("click", (event) => {
+  // A low-placed Look target may be covered by its own caption. Clicking the
+  // caption at the same cursor position should close it too.
+  if (event.target.closest("button")) return;
+  hideSceneCaption();
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !sceneCaption.hidden) hideSceneCaption();
+});
+
+function addHotspot(kind, label, command, x, y) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = `scene-hotspot ${kind}`;
+  button.style.left = `${x}%`;
+  button.style.top = `${y}%`;
+  button.title = `${kind === "object" ? "Look at" : "Go to"} ${label}`;
+  button.setAttribute("aria-label", button.title);
+  const symbol = document.createElement("span");
+  symbol.className = "hotspot-symbol";
+  symbol.setAttribute("aria-hidden", "true");
+  symbol.textContent = kind === "object" ? "◆" : exitArrows[command];
+  const caption = document.createElement("span");
+  caption.className = "hotspot-caption";
+  caption.textContent = label;
+  button.append(symbol, caption);
+  button.addEventListener("click", () => sendGameCommand(command,
+    kind === "object" ? `Looking at ${label}` : ""));
+  sceneHotspots.appendChild(button);
+}
+
+function exitPoint(direction) {
+  return ({north: {x: 50, y: 9}, south: {x: 50, y: 91},
+    west: {x: 10, y: 50}, east: {x: 90, y: 50},
+    in: {x: 77, y: 88}, out: {x: 23, y: 88},
+    up: {x: 73, y: 9}, down: {x: 27, y: 91}})[direction] || {x: 50, y: 50};
+}
 
 function updateProgress(progress) {
   if (!progress) return;
@@ -128,7 +423,8 @@ function classifyLine(line, index, roomTitleIndex) {
   if (line.startsWith("YOU ARE HERE")) return "room-title";
   if (index === roomTitleIndex) return "room-title";
   if (line.startsWith("Exits:") || line.startsWith("Local routes:")) return "exits";
-  if (line.startsWith("Nearby:") || line.startsWith("Players here:")) return "npcs";
+  if (line.startsWith("Players here:")) return "players-here";
+  if (line.startsWith("Nearby:")) return "npcs";
   if (line.includes("“") || line.includes("”")) return "npc-chatter";
   if (line.startsWith("INSIGHT -")) return "penalty";
   if (line.startsWith("Discovery:") || line.startsWith("INSIGHT") || line.startsWith("RANK UP")) return "reward";
@@ -174,6 +470,9 @@ function returnToLogin(message) {
   token = null;
   pendingWelcome = "";
   awaitingQuizContinue = false;
+  hideSceneCaption();
+  currentScene = null;
+  updateInteraction(null);
   document.removeEventListener("keydown", continueFromInstructions);
   if (surveyDialog.open) surveyDialog.close();
   document.querySelector("#instructions").hidden = true;
@@ -277,7 +576,8 @@ function enterGame() {
   document.querySelector("#game").hidden = false;
   append(pendingWelcome);
   pendingWelcome = "";
-  commandInput.focus();
+  if (preferredView === "text") commandInput.focus();
+  else document.querySelector("#adventure-view-button").focus();
   if (pollTimer) window.clearInterval(pollTimer);
   pollTimer = window.setInterval(poll, 900);
 }
@@ -311,6 +611,8 @@ document.querySelector("#login-form").addEventListener("submit", async (event) =
     awaitingQuizContinue = Boolean(data.awaiting_continue);
     updateProgress(data.progress);
     updateSidePanel(data.side_panel);
+    updateScene(data.scene);
+    updateInteraction(data.interaction);
     document.querySelector("#login").hidden = true;
     document.querySelector("#status").textContent = "connected";
     if (data.show_instructions) {
@@ -325,13 +627,16 @@ document.querySelector("#login-form").addEventListener("submit", async (event) =
   }
 });
 
-document.querySelector("#command-form").addEventListener("submit", async (event) => {
-  event.preventDefault();
+async function sendGameCommand(command, captionTitle = "") {
+  if (sceneBusy) return;
+  if (captionTitle && !sceneCaption.hidden && sceneCaptionCommand === command) {
+    hideSceneCaption();
+    return;
+  }
   if (soundEnabled) ensureAudio();
-  const command = commandInput.value.trim();
   if (!command || !token) return;
+  sceneBusy = true;
   append(`command> ${command}`, "command");
-  commandInput.value = "";
   try {
     const data = await api("/api/command", {
       method: "POST",
@@ -342,15 +647,30 @@ document.querySelector("#command-form").addEventListener("submit", async (event)
     awaitingQuizContinue = Boolean(data.awaiting_continue);
     updateProgress(data.progress);
     updateSidePanel(data.side_panel);
+    updateScene(data.scene);
+    updateInteraction(data.interaction, data.output);
+    if (captionTitle && data.scene && !data.scene.hidden && sceneArt[data.scene.key]) {
+      showSceneCaption(captionTitle, data.output);
+      sceneCaptionCommand = command;
+    }
     if (data.open_survey) await openSurvey();
   } catch (err) {
     if (handleSessionError(err)) return;
     append(err.message, "error");
+  } finally {
+    sceneBusy = false;
   }
+}
+
+document.querySelector("#command-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const command = commandInput.value.trim();
+  commandInput.value = "";
+  await sendGameCommand(command);
 });
 
 document.addEventListener("keydown", async (event) => {
-  if (surveyDialog.open || !awaitingQuizContinue || !token || event.ctrlKey || event.altKey || event.metaKey) return;
+  if (preferredView !== "text" || surveyDialog.open || !awaitingQuizContinue || !token || event.ctrlKey || event.altKey || event.metaKey) return;
   event.preventDefault();
   awaitingQuizContinue = false;
   commandInput.value = "";
@@ -364,6 +684,8 @@ document.addEventListener("keydown", async (event) => {
     awaitingQuizContinue = Boolean(data.awaiting_continue);
     updateProgress(data.progress);
     updateSidePanel(data.side_panel);
+    updateScene(data.scene);
+    updateInteraction(data.interaction, data.output);
   } catch (err) {
     if (handleSessionError(err)) return;
     awaitingQuizContinue = true;
@@ -376,6 +698,10 @@ async function poll() {
   try {
     const data = await api(`/api/events?token=${encodeURIComponent(token)}`);
     data.messages.forEach((message) => append(message, "social"));
+    if (currentScene?.key && data.scene?.key === currentScene.key) {
+      currentScene.players = data.scene.players;
+      updateScenePlayers(data.scene.players);
+    }
   } catch (err) {
     if (handleSessionError(err)) return;
     window.clearInterval(pollTimer);

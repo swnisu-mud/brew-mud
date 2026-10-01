@@ -13,7 +13,7 @@ brew-mud = "brewmud.cli:main"
 brew-mud-web = "brewmud.web:main"
 
 [tool.setuptools.package-data]
-brewmud = ["static/*"]
+brewmud = ["static/*", "static/art/*.webp"]
 
 [tool.setuptools.packages.find]
 include = ["brewmud*"]

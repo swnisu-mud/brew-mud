@@ -1,6 +1,6 @@
 # BrewMUD
 
-BrewMUD is a quest-driven multiplayer text world about the biochemistry of beer. Students move through a working maltings, brewhouse, fermentation cellar, hop yard, packaging floor, and quality wing while diagnosing process failures for brewers, yeast, enzymes, metabolites, and other characters.
+BrewMUD is a quest-driven multiplayer brewery world about the biochemistry of beer. Students move through a working maltings, brewhouse, fermentation cellar, hop yard, packaging floor, and quality wing while diagnosing process failures for brewers, yeast, enzymes, metabolites, and other characters.
 
 This first playable build is based on the instructor's BBMB 1200 lecture material (with the history lecture intentionally omitted). It includes:
 
@@ -12,6 +12,7 @@ This first playable build is based on the instructor's BBMB 1200 lecture materia
 - randomized answer positions, bare `A`/`B`/`C`/`D` answers, quiz pausing, review routes, and an incorrect-answer penalty
 - fourteen progression ranks based on exploration, quests, and knowledge checks
 - browser-based multiplayer presence and local room chat
+- point-and-click illustrations for all 90 rooms, with a classic text-view switch
 - first-arrival NPC chatter, colored semantic output, and quiz sound/screen flash
 - an optional ten-question anonymous evaluation with account-level completion tracking
 - automatic logout after 30 minutes without a player command, with progress saved
@@ -25,6 +26,12 @@ python3 -m brewmud.web
 ```
 
 Open <http://127.0.0.1:8000>. Use a second browser or private window with another player name to test multiplayer.
+
+In the illustrated rooms, use a `Talk to …` button below the picture for an NPC, click an object to examine it, or click an exit to move. There is no moving avatar. Human brewery staff are part of the artwork; molecular and instrument NPCs are represented by the room's models or apparatus. The command box remains available for all quests and quizzes; switch to classic text at any time.
+
+Clicked conversations and object details appear as a caption over the picture and remain in the text transcript below. Close a caption with its × button or Escape; lengthy responses can be scrolled within the caption.
+
+The artwork is atmospheric; room descriptions, NPC conversations, and quiz explanations remain the source for course-specific scientific details.
 
 To let trusted devices on the same local network connect:
 

@@ -4,6 +4,7 @@ import argparse
 import hmac
 import json
 import os
+import re
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -106,10 +107,15 @@ class RequestHandler(BaseHTTPRequestHandler):
         if parsed.path == "/instructor.css":
             self._send_file(STATIC_DIR / "instructor.css", "text/css; charset=utf-8")
             return
+        art_name = parsed.path.removeprefix("/art/") if parsed.path.startswith("/art/") else ""
+        if re.fullmatch(r"[a-z0-9-]+\.webp", art_name):
+            self._send_file(STATIC_DIR / "art" / art_name, "image/webp")
+            return
         if parsed.path == "/api/events":
             token = parse_qs(parsed.query).get("token", [""])[0]
             try:
-                self._json({"messages": self.server.world.poll(token)})
+                self._json({"messages": self.server.world.poll(token),
+                            "scene": self.server.world.player_scene(token)})
             except IdleTimeoutError as exc:
                 self._idle_timeout(exc)
             except KeyError as exc:
@@ -145,7 +151,9 @@ class RequestHandler(BaseHTTPRequestHandler):
                 self._json({"token": token, "output": output, "show_instructions": False,
                             "awaiting_continue": self.server.world.awaiting_continue(token),
                             "progress": self.server.world.player_progression(token),
-                            "side_panel": self.server.world.player_side_panel(token)})
+                            "side_panel": self.server.world.player_side_panel(token),
+                            "interaction": self.server.world.player_interaction(token),
+                            "scene": self.server.world.player_scene(token)})
             except ValueError as exc:
                 self._json({"error": str(exc)}, HTTPStatus.BAD_REQUEST)
             return
@@ -157,7 +165,9 @@ class RequestHandler(BaseHTTPRequestHandler):
                 self._json({"token": token, "output": output, "show_instructions": True,
                             "awaiting_continue": self.server.world.awaiting_continue(token),
                             "progress": self.server.world.player_progression(token),
-                            "side_panel": self.server.world.player_side_panel(token)},
+                            "side_panel": self.server.world.player_side_panel(token),
+                            "interaction": self.server.world.player_interaction(token),
+                            "scene": self.server.world.player_scene(token)},
                            HTTPStatus.CREATED)
             except ValueError as exc:
                 self._json({"error": str(exc)}, HTTPStatus.BAD_REQUEST)
@@ -170,7 +180,9 @@ class RequestHandler(BaseHTTPRequestHandler):
                             "open_survey": output.startswith("SURVEY READY"),
                             "awaiting_continue": self.server.world.awaiting_continue(token),
                             "progress": self.server.world.player_progression(token),
-                            "side_panel": self.server.world.player_side_panel(token)})
+                            "side_panel": self.server.world.player_side_panel(token),
+                            "interaction": self.server.world.player_interaction(token),
+                            "scene": self.server.world.player_scene(token)})
             except IdleTimeoutError as exc:
                 self._idle_timeout(exc)
             except KeyError as exc:

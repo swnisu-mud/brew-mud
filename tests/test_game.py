@@ -21,7 +21,7 @@ from brewmud.quizzes import QUIZZES
 from brewmud.regional_maps import REGIONAL_MAPS, ROOM_REGION, compact_map_data
 from brewmud.server import IDLE_TIMEOUT_SECONDS, IdleTimeoutError, MUDServer
 from brewmud.survey import SURVEY_QUESTIONS, validate_ratings
-from brewmud.world import NPC_DESCRIPTIONS, NPC_DIALOGUE, NPCS, ROOMS
+from brewmud.world import NPC_DESCRIPTIONS, NPC_DIALOGUE, NPCS, ROOM_DATA, ROOMS
 
 
 def npc_room(npc: str) -> str:
@@ -393,6 +393,49 @@ class QuizTests(unittest.TestCase):
 
 
 class MultiplayerTests(unittest.TestCase):
+    def test_adventure_scene_uses_live_room_and_hides_unrevealed_quiz_room(self):
+        server = MUDServer(":memory:")
+        self.addCleanup(server.close)
+        alice, _ = server.register("Alice", "barley-123")
+        bob, _ = server.register("Bob", "maltose-123")
+        scene = server.player_scene(alice)
+        self.assertEqual(scene["key"], "brewery_gate")
+        self.assertIn({"key": "training_coordinator", "name": "Training Coordinator"}, scene["npcs"])
+        self.assertIn("Bob", scene["players"])
+        self.assertIn({"direction": "east", "name": "Malt Curing Floor"}, scene["exits"])
+        server.command(alice, "east")
+        self.assertEqual(server.player_scene(alice)["key"], "cure_floor")
+        server._players[alice].game.state.active_quiz = next(iter(QUIZZES))
+        self.assertEqual(server.player_scene(alice), {"hidden": True})
+        server._players[alice].game.state.active_quiz = None
+        server._players[alice].game.state.pending_room_description = "cure_floor"
+        self.assertEqual(server.player_scene(alice), {"hidden": True})
+
+    def test_clickable_quiz_uses_player_order_and_preserves_hidden_room(self):
+        server = MUDServer(":memory:")
+        self.addCleanup(server.close)
+        token, _ = server.register("Alice", "barley-123")
+        game = server._players[token].game
+        key = "mash_tun"
+        game.state.active_quiz = key
+        game.state.quiz_option_order = list(reversed(range(len(QUIZZES[key].options))))
+        game.state.pending_room_description = "Hidden room text"
+        interaction = server.player_interaction(token)
+        self.assertEqual(interaction["mode"], "active")
+        self.assertEqual(interaction["options"][0]["text"], QUIZZES[key].options[-1])
+        self.assertEqual(server.player_scene(token), {"hidden": True})
+        server.command(token, "pause")
+        self.assertEqual(server.player_interaction(token)["mode"], "paused")
+        self.assertEqual(game.state.pending_room_description, None)
+        server.command(token, "quiz")
+        game.state.pending_room_description = "Hidden room text"
+        answer = "ABCD"[game.state.quiz_option_order.index(QUIZZES[key].correct)]
+        server.command(token, answer)
+        self.assertEqual(server.player_interaction(token)["mode"], "continue")
+        self.assertEqual(server.player_scene(token), {"hidden": True})
+        server.command(token, "continue")
+        self.assertEqual(server.player_interaction(token)["mode"], "explore")
+
     def test_idle_session_expires_after_30_minutes_and_saves_progress(self):
         now = [100.0]
         server = MUDServer(":memory:", clock=lambda: now[0])
@@ -694,6 +737,64 @@ class AccountStoreTests(unittest.TestCase):
 
 
 class AssetTests(unittest.TestCase):
+    def test_all_rooms_have_illustrated_assets(self):
+        static = Path(__file__).parents[1] / "brewmud" / "static"
+        script = (static / "app.js").read_text()
+        staff_art = {"brewery_gate", "grain_receiving", "steep_house", "kiln", "cure_floor",
+                     "water_lab", "city_profiles", "treatment_bay", "mill_room", "mash_tun",
+                     "carbohydrate_lab"}
+        for key, *_ in ROOM_DATA:
+            name = "malt-curing-floor" if key == "cure_floor" else key.replace("_", "-")
+            art_name = f"{name}-with-npc" if key in staff_art else name
+            self.assertTrue((static / "art" / f"{art_name}.webp").is_file(), key)
+            self.assertIn(f'{key}: "/art/{art_name}.webp"', script)
+        page = (static / "index.html").read_text()
+        self.assertIn('id="scene-picture"', page)
+        self.assertIn('id="scene-hotspots"', page)
+        self.assertIn('id="scene-talk-actions"', page)
+        self.assertIn('id="scene-caption"', page)
+        self.assertIn('id="scene-caption-close"', page)
+        self.assertNotIn('id="coordinator-voice"', page)
+        self.assertIn("sceneTalkActions.appendChild(button)", script)
+        self.assertNotIn('addHotspot("npc"', script)
+        self.assertIn('id="text-view-button"', page)
+        self.assertNotIn('id="scene-canvas"', page)
+
+    def test_clicked_information_uses_scene_caption(self):
+        script = (Path(__file__).parents[1] / "brewmud" / "static" / "app.js").read_text()
+        self.assertIn('sendGameCommand(`talk ${npc.key}`, `Talking to ${npc.name}`)', script)
+        self.assertIn('kind === "object" ? `Looking at ${label}` : ""', script)
+        self.assertIn('showSceneCaption(captionTitle, data.output)', script)
+        self.assertIn('line.startsWith("Players here:")', script)
+        style = (Path(__file__).parents[1] / "brewmud" / "static" / "style.css").read_text()
+        self.assertIn('.illustrated-mode .message .players-here', style)
+        self.assertIn('!currentScene || currentScene.hidden', script)
+        self.assertIn('sceneCaptionCommand === command', script)
+        self.assertIn('if (captionTitle && !sceneCaption.hidden && sceneCaptionCommand === command)', script)
+        self.assertIn('command === "survey" ? "" : button.textContent', script)
+        self.assertIn('sceneCaption.addEventListener("click"', script)
+        self.assertIn('sceneCaptionCommand = null;', script)
+        self.assertNotIn('speechSynthesis', script)
+
+    def test_illustrated_targets_use_working_game_commands(self):
+        for key, *_ in ROOM_DATA:
+            room = ROOMS[key]
+            game = Game(state=GameState(room=key), pop_quizzes_enabled=False)
+            for npc in room.npcs:
+                result = game.execute(f"talk {npc}")
+                self.assertNotIn("cannot find", result.casefold(), (key, npc))
+            for feature in room.features:
+                result = game.execute(f"look {feature.name}")
+                self.assertNotIn("do not see", result.casefold(), (key, feature.name))
+
+    def test_illustrated_exit_arrows_match_directions(self):
+        script = (Path(__file__).parents[1] / "brewmud" / "static" / "app.js").read_text()
+        for direction, arrow in {"north": "↑", "south": "↓", "east": "→", "west": "←",
+                                 "up": "↑", "down": "↓", "in": "↪", "out": "↩"}.items():
+            self.assertIn(f'{direction}: "{arrow}"', script)
+        self.assertIn("exitArrows[exit.direction]", script)
+        self.assertIn("exitArrows[command]", script)
+
     def test_browser_assets_are_brewery_branded(self):
         static = Path(__file__).parents[1] / "brewmud" / "static"
         self.assertIn("BrewMUD", (static / "index.html").read_text())
@@ -705,8 +806,21 @@ class AssetTests(unittest.TestCase):
         self.assertIn('trimmed.includes("Shortest route to ")', colorizer)
         self.assertIn(': /<[A-Z0-9]{3,4}>/g;', colorizer)
         instructions = (static / "index.html").read_text()
-        self.assertIn("TALK TRAIN", instructions)
-        self.assertIn("Press any key to continue", instructions)
+        self.assertIn("Talk to Training Coordinator", instructions)
+        self.assertIn("Click Continue to begin", instructions)
+        self.assertIn('id="quiz-controls"', instructions)
+        self.assertIn('id="click-actions"', instructions)
+        self.assertIn('id="command-form"', instructions)
+        self.assertNotIn('data-command="look"', instructions)
+        self.assertIn('data-command="journal"', instructions)
+        self.assertNotIn('data-command="say hello"', instructions)
+        self.assertNotIn('data-command="inventory"', instructions)
+        self.assertIn('data-command="survey"', instructions)
+        self.assertIn('id="leave-game"', instructions)
+        self.assertIn('await api("/api/logout"', (static / "app.js").read_text())
+        style = (static / "style.css").read_text()
+        self.assertIn('.illustrated-mode .command-row, .illustrated-mode .shortcut { display: none; }', style)
+        self.assertIn('.illustrated-mode .click-actions { display: flex;', style)
         self.assertIn("show_instructions", (static / "app.js").read_text())
         self.assertIn("30 minutes without a game command", instructions)
         self.assertIn('error.code !== "idle_timeout"', (static / "app.js").read_text())

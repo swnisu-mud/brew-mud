@@ -11,6 +11,8 @@ from typing import Callable
 
 from .accounts import Account, AccountStore
 from .game import Game
+from .quizzes import QUIZZES
+from .world import NPCS, ROOMS
 from .survey import (
     SURVEY_COMMENT_LIMIT,
     SURVEY_MINIMUM_RESULTS,
@@ -224,6 +226,29 @@ class MUDServer:
             session = self._players.get(token)
             return bool(session and session.game.awaiting_quiz_continue)
 
+    def player_interaction(self, token: str) -> dict[str, object] | None:
+        """Quiz controls for the illustrated view, in the player's shuffled order."""
+        with self._lock:
+            self._expire_idle_sessions()
+            session = self._players.get(token)
+            if not session:
+                return None
+            game = session.game
+            if game.awaiting_quiz_continue:
+                return {"mode": "continue"}
+            key = game.state.active_quiz or game.state.paused_quiz
+            if key is None:
+                return {"mode": "explore"}
+            question = QUIZZES[key]
+            order = game._quiz_order(question)
+            return {
+                "mode": "active" if game.state.active_quiz else "paused",
+                "topic": ROOMS[key].name,
+                "prompt": question.prompt,
+                "options": [{"letter": chr(65 + index), "text": question.options[original]}
+                            for index, original in enumerate(order)],
+            }
+
     def player_progression(self, token: str) -> dict[str, object] | None:
         """Return the live LEVEL summary for one authenticated player."""
         with self._lock:
@@ -237,6 +262,28 @@ class MUDServer:
             self._expire_idle_sessions()
             session = self._players.get(token)
             return session.game.side_panel_data() if session else None
+
+    def player_scene(self, token: str) -> dict[str, object] | None:
+        """Small adventure-view snapshot; never reveal a room during a quiz."""
+        with self._lock:
+            self._expire_idle_sessions()
+            session = self._players.get(token)
+            if not session:
+                return None
+            state = session.game.state
+            if state.active_quiz or state.pending_room_description:
+                return {"hidden": True}
+            room = session.game.room
+            return {
+                "key": room.key,
+                "name": room.name,
+                "exits": [{"direction": direction, "name": ROOMS[target].name}
+                          for direction, target in room.exits.items()],
+                "npcs": [{"key": key, "name": NPCS[key].name} for key in room.npcs],
+                "features": [feature.name for feature in room.features],
+                "players": [other.name for other in self._players.values()
+                            if other is not session and other.game.state.room == room.key],
+            }
 
     def survey_form(self, token: str) -> dict[str, object]:
         """Return public survey wording for one authenticated player."""

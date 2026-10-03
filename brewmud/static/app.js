@@ -325,10 +325,14 @@ function updateSidePanel(sidePanel) {
   document.querySelector("#quest-objective").textContent = quest.objective;
 
   // A missing map means a pop quiz is intentionally hiding the new room.
+  document.querySelector(".map-panel").hidden = !sidePanel.map;
   if (!sidePanel.map) return;
   const map = sidePanel.map;
   document.querySelector("#mini-map-title").textContent = map.title;
   document.querySelector("#mini-map-current").textContent = `Here: ${map.current_name}`;
+  const questMarker = document.querySelector("#mini-map-quest");
+  questMarker.hidden = !map.quest_marker;
+  questMarker.textContent = map.quest_marker ? `★ ${map.quest_marker}` : "";
   const diagram = document.querySelector("#mini-map");
   diagram.replaceChildren();
   map.rows.forEach((nodes, rowIndex) => {
@@ -338,10 +342,10 @@ function updateSidePanel(sidePanel) {
     if (rowIndex < map.rows.length - 1) row.classList.add("has-next-row");
     nodes.forEach((node) => {
       const marker = document.createElement("span");
-      marker.className = `mini-map-node${node.current ? " current" : ""}`;
-      marker.textContent = node.code;
+      marker.className = `mini-map-node${node.current ? " current" : ""}${node.quest ? " quest" : ""}`;
+      marker.textContent = node.quest ? `★${node.code}` : node.code;
       marker.title = node.name;
-      marker.setAttribute("aria-label", `${node.name}${node.current ? ", your current location" : ""}`);
+      marker.setAttribute("aria-label", `${node.name}${node.current ? ", your current location" : ""}${node.quest ? ", quest route marker" : ""}`);
       row.appendChild(marker);
     });
     diagram.appendChild(row);

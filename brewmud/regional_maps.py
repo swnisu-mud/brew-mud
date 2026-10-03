@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from collections import deque
 
 from .world import ROOMS
 
@@ -85,15 +86,57 @@ def render_map(current: str, requested: str = "") -> str:
     return REGIONAL_MAPS[region].render(current) if region else f"Unknown map region: {requested}.\n\n{map_index()}"
 
 
-def compact_map_data(current: str) -> dict[str, object]:
+def _route_to_room(start: str, destination: str) -> list[tuple[str, str]]:
+    """Shortest route as (direction, next room) steps."""
+    queue = deque([(start, [])])
+    seen = {start}
+    while queue:
+        room, route = queue.popleft()
+        for direction, neighbor in ROOMS[room].exits.items():
+            if neighbor in seen:
+                continue
+            next_route = [*route, (direction, neighbor)]
+            if neighbor == destination:
+                return next_route
+            seen.add(neighbor)
+            queue.append((neighbor, next_route))
+    return []
+
+
+def compact_map_data(current: str, quest_room: str | None = None,
+                     quest_npc: str | None = None) -> dict[str, object]:
     """Return a structured regional map suitable for the browser side panel."""
-    region = REGIONAL_MAPS[ROOM_REGION[current]]
+    region_key = ROOM_REGION[current]
+    region = REGIONAL_MAPS[region_key]
+    marker_room = None
+    marker_text = None
+    if quest_room and quest_npc:
+        if ROOM_REGION[quest_room] == region_key:
+            marker_room = quest_room
+            marker_text = f"Quest: {quest_npc} at {ROOMS[quest_room].name}."
+        else:
+            marker_room = current
+            transition = None
+            for direction, next_room in _route_to_room(current, quest_room):
+                if ROOM_REGION[next_room] != region_key:
+                    transition = (direction, next_room)
+                    break
+                marker_room = next_room
+            if transition:
+                direction, next_room = transition
+                next_move = (f"go {direction} to {ROOMS[next_room].name}"
+                             if marker_room == current else
+                             f"go to {ROOMS[marker_room].name}, then {direction} to {ROOMS[next_room].name}")
+                marker_text = (f"Toward {quest_npc} in {REGIONAL_MAPS[ROOM_REGION[quest_room]].title}: "
+                               f"{next_move}.")
     return {
         "title": region.title,
         "current_name": ROOMS[current].name,
+        "quest_marker": marker_text,
         "rows": [
             [
-                {"code": code, "name": ROOMS[room].name, "current": room == current}
+                {"code": code, "name": ROOMS[room].name, "current": room == current,
+                 "quest": room == marker_room}
                 for code, room in row
             ]
             for row in region.rows

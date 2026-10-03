@@ -316,11 +316,46 @@ class CommandTests(unittest.TestCase):
         panel = self.game.side_panel_data()
         self.assertEqual(panel["quest"]["status"], "Next quest")
         self.assertEqual(panel["map"]["current_name"], "Brewery Gate")
+        self.assertEqual([node["code"] for row in panel["map"]["rows"] for node in row if node["quest"]], ["GAT"])
         self.game.talk("coordinator")
         panel = self.game.side_panel_data()
         self.assertEqual(panel["quest"]["status"], "Active quest")
         self.assertEqual(panel["quest"]["title"], "First Day in the Brewery")
         self.assertIn("Head Maltster", panel["quest"]["objective"])
+        self.assertEqual([node["code"] for row in panel["map"]["rows"] for node in row if node["quest"]], ["CUR"])
+
+    def test_quest_marker_points_to_regional_gateway_and_updates_with_escort(self):
+        self.game.talk("coordinator")
+        self.game.state.quest_stages["orientation"] = 2
+        panel = self.game.side_panel_data()
+        self.assertEqual([node["code"] for row in panel["map"]["rows"] for node in row if node["quest"]], ["GER"])
+        self.assertIn("then down to Brewing Water Laboratory", panel["map"]["quest_marker"])
+        self.game.state.room = "germination_floor"
+        self.assertIn("go down to Brewing Water Laboratory", self.game.side_panel_data()["map"]["quest_marker"])
+
+        escort = Game(state=GameState(completed_quests={"orientation"},
+                                      quest_stages={"malt_house": 4}), pop_quizzes_enabled=False)
+        before = escort.side_panel_data()["map"]
+        self.assertIn("Beta-Amylase", before["quest_marker"])
+        escort.state.companion = "beta_amylase"
+        after = escort.side_panel_data()["map"]
+        self.assertIn("Head Maltster", after["quest_marker"])
+        self.assertEqual([node["code"] for row in after["rows"] for node in row if node["quest"]], ["CUR"])
+
+    def test_every_quest_stage_has_one_map_marker(self):
+        for key, quest in QUESTS.items():
+            for stage, step in enumerate(quest.steps):
+                state = GameState(completed_quests=set(quest.requires), quest_stages={key: stage})
+                game = Game(state=state, pop_quizzes_enabled=False)
+                map_data = game.side_panel_data()["map"]
+                marked = [node for row in map_data["rows"] for node in row if node["quest"]]
+                self.assertEqual(len(marked), 1, (key, stage))
+                self.assertTrue(map_data["quest_marker"], (key, stage))
+                if step.action == "escort":
+                    game.state.companion = step.target
+                    delivered = game.side_panel_data()["map"]
+                    self.assertEqual(sum(node["quest"] for row in delivered["rows"] for node in row), 1,
+                                     (key, stage, "escort"))
 
     def test_side_panel_map_waits_for_hidden_room_description(self):
         self.game.state.pending_room_description = "HIDDEN ROOM"

@@ -345,18 +345,23 @@ class Game:
 
     def side_panel_data(self) -> dict[str, object]:
         """Return compact quest and location context for the browser UI."""
+        target_npc = None
         if self.state.quest_stages:
             key, stage = next(iter(self.state.quest_stages.items()))
             quest = QUESTS[key]
+            step = quest.steps[stage]
+            target_npc = (step.destination if step.action == "escort"
+                          and self.state.companion == step.target else step.target)
             quest_data = {
                 "status": "Active quest",
                 "title": quest.title,
                 "description": quest.lead,
-                "objective": quest.steps[stage].objective,
+                "objective": step.objective,
             }
         else:
             quest = self._next_available_quest()
             if quest:
+                target_npc = quest.giver
                 giver_room = next(r.key for r in ROOMS.values() if quest.giver in r.npcs)
                 quest_data = {
                     "status": "Next quest",
@@ -374,7 +379,10 @@ class Game:
 
         # Do not let the persistent map reveal a destination while a pop quiz
         # is intentionally withholding that room's description.
-        map_data = None if self.state.pending_room_description is not None else compact_map_data(self.state.room)
+        target_room = next((r.key for r in ROOMS.values() if target_npc in r.npcs), None)
+        map_data = (None if self.state.pending_room_description is not None
+                    else compact_map_data(self.state.room, target_room,
+                                          NPCS[target_npc].name if target_npc else None))
         return {"quest": quest_data, "map": map_data}
 
     def quiz(self) -> str:

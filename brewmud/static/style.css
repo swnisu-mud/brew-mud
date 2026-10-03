@@ -183,7 +183,11 @@ button:hover { filter: brightness(1.1); }
   content: "│"; position: absolute; top: 100%; left: 50%; color: var(--muted); font-weight: 400;
 }
 .mini-map-node.current { color: #03110d; background: var(--cyan); border-color: var(--cyan); }
+.mini-map-node.quest { color: var(--amber); border-color: var(--amber); box-shadow: 0 0 .45rem rgba(255, 209, 102, .36); }
+.mini-map-node.current.quest { color: #03110d; background: linear-gradient(90deg, var(--cyan) 50%, var(--amber) 50%); }
 .mini-map-current { margin: 0; color: var(--cyan); font-size: .72rem; font-weight: 700; }
+.mini-map-quest { margin: .28rem 0 0; color: var(--amber); font-size: .7rem; line-height: 1.3; }
+.mini-map-quest[hidden] { display: none; }
 .map-help { margin: .28rem 0 0; color: var(--muted); font-size: .64rem; line-height: 1.25; }
 .message { white-space: pre-wrap; line-height: 1.55; margin-bottom: 1.15rem; }
 .message.command { color: var(--amber); margin-bottom: .45rem; }
